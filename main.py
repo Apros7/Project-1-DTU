@@ -14,22 +14,21 @@ bacteria_lookup = {1: "Salmonella enterica",
 
 # This function loads the data.
 # It takes a string as an input and returns an array.
-def dataLoad(filename):
+def dataLoad(filename : str) -> np.ndarray:
     # An empty list is created to store the data as it is loaded in
     data = []
     # We open the file in read mode:
     with open(filename, "r") as file:
-        # For every row in the file we split the row into their 3 respective categories
+        # For every row in the file we split the row into its 3 respective categories
         for row in file:
             temperature, growth_rate, bacteria = row.split()
-            # We then test if the values are as they should be
-            # If not, then we tell the user that there is a problem, what value is the problem and why.
-            # We then move on to the next line
+            # The values are tested on the conditions given
+            # If an error is encountered we inform the user what the error is.
+            # And we continue to the next iteration without appending the values.
             try: temperature = int(temperature)
             except:
                 print(f"This temperature value: {temperature} in {filename} is not an integer value")
                 print("This row wont included in the data")
-
                 continue
 
             if temperature < 10 or temperature > 60 :
@@ -58,7 +57,7 @@ def dataLoad(filename):
                 print(f"This bacteria value: {int(bacteria)} in {filename} is not between 1 and 4.")
                 print("This row wont included in the data")
                 continue
-            # This row is not clean and can be added to the list
+            # After testing we can append the data
             data.append([temperature, growth_rate, bacteria])
     # At the end we return the full list with all the data in an array
     return np.array(data)
@@ -66,7 +65,7 @@ def dataLoad(filename):
 # This function will show certain statistics about the data.
 # It takes the data as an array as an input and only returns None in the case that
 # the user wants to go back to the main menu. Else nothing is returned.
-def dataStatistics(data):
+def dataStatistics(data : np.ndarray):
     # First the staticstic value, which is soon to be calculated, is initiated.
     statisticValue = 0
     # Here we create a statistic lookup to get the right statistic based on the user input.
@@ -119,17 +118,13 @@ def dataStatistics(data):
 # This function will plot 2 plots based on the data.
 # It takes the data as an array as an input and returns nothing.
 # It opens a new window and displays 2 plots in it.
-def dataPlot(data):
+def dataPlot(data : np.ndarray) -> None:
     # Creating and selecting the right subplot:
     plt.subplot(2, 1, 1)
-    # Assigning the number of different bacteria to a variable
-    numberOfBacteria1 = len([1 for i in range(len(data)) if data[i,2] == 1])
-    numberOfBacteria2 = len([1 for i in range(len(data)) if data[i, 2] == 2])
-    numberOfBacteria3 = len([1 for i in range(len(data)) if data[i, 2] == 3])
-    numberOfBacteria4 = len([1 for i in range(len(data)) if data[i, 2] == 4])
+    
     # Creating lists with the x and y values
-    x_values = ([name for name in bacteria_lookup.values()])
-    y_values = [numberOfBacteria1, numberOfBacteria2, numberOfBacteria3, numberOfBacteria4]
+    x_values = list(bacteria_lookup.values())
+    y_values = [np.count_nonzero(data[:,2] == i) for i in [1,2,3,4]]
     # plotting as a bar plot
     plt.bar(x_values, y_values)
     # Here we change the title, x label, size of x values, y label
@@ -145,6 +140,7 @@ def dataPlot(data):
     # A small dictionary is made to use to the correct color based on the bacteriatype
     colors = {1: "r", 2: "y", 3: "g", 4: "b"}
     # We then loop through every kind of bacteria and plot their data.
+    data = data[data[:,0].argsort()]
     for Bacteria in range(1,5):
         xValuesBacteria = [data[i,0] for i in range(len(data)) if data[i,2] == Bacteria]
         yValuesBacteria = [data[i,1] for i in range(len(data)) if data[i,2] == Bacteria]
@@ -161,11 +157,9 @@ def dataPlot(data):
     # We then show the layout to the user
     plt.show()
 
-# This function is used to filter data
-# It takes the data (array) and potentially filtered data (array) as inputs
-# and returns an array: which can be filtered on new preferences, the original data or
-# just to nothing and return the already filtered data
-def dataFilter(data, filtered_data):
+# This function takes any numpy array as input and outputs one of three possibilities.
+# 1: New filtered array, 2: the original data, or 3: return the input array.
+def dataFilter(data : np.ndarray, filtered_data : np.ndarray) -> np.ndarray:
     # First the user is giving the different possibilities
     desiredFilter = input("Type the number corresponding with the way you want to filter your data: \n"
                           "1. By type of bacteria\n"
@@ -223,20 +217,15 @@ def dataFilter(data, filtered_data):
     # the data will stay the same, whether or not there is a filter on it.
     return filtered_data
 
-# This function will check if the value is an integer value between to bounds.
-# This function is introduced to make the functions above more compact.
-# It takes a value, integer and integer as input.
-# If the value is an integer type and between the two bounds the integer value is returned.
-# Else the string "Error" is returned
+# This function is introduced to simplify the code related to our command-line interface.
 def checkIfValidNumber(value, lowerBound, upperBound):
-    # We try to take the integer of the value.
-    # If this is not possible, then we inform and return the string "Error"
+    # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
-    except: print("You need to type a number"); return "Error"
-    # If the integer value is not between the two bound
-    # the user is informed and "Error" is returned.
-    if intValue > upperBound or intValue < lowerBound:
-        print("You need to type a valid number"); return "Error"
+    except: print("You need to type a number"); return None
+
+    # If the input isn't between lower and upper bound, print error and return none.
+    if not (lowerBound < intValue and intValue < upperBound):
+        print("You need to type a valid number"); return None
     return intValue
 
 def main():
@@ -277,7 +266,12 @@ def main():
             # If the filename is correct, the original data is assigned to data
             # As this is the variable for the unfiltered data.
             # We now also know that the data has been loaded and user is informed.
-            try: data = dataLoad(filename); originalData = data; isDataLoaded = True; print("Your data was successfully loaded")
+            try:
+                data = dataLoad(filename)
+                originalData = data
+                isDataLoaded = True
+                print("Your data was successfully loaded")
+
             except: print("You need to type in a valid filename")
 
         # The rest of the actions are only allowed if the data has been loaded
@@ -305,5 +299,5 @@ def main():
         else:
             print("You need to load in your data before you can take any other action.")
 
-main()
+# main()
 
