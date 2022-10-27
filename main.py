@@ -1,9 +1,11 @@
+# This function only runs in Python 3
+
 # Loading the numpy to use for calculations of statistics
 import numpy as np
 # Loading matplotlib.pyplot to make plots
 import matplotlib.pyplot as plt
 
-# We make a simple bacteria looking dictionary to be able to
+# We make a simple bacteria look up dictionary to be able to
 # find the correct name according to the number of the bacteria
 bacteria_lookup = {1: "Salmonella enterica",
                     2: "Bacillus cereus",
