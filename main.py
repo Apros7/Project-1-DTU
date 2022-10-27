@@ -20,35 +20,42 @@ def dataLoad(filename):
         # For every row in the file we split the row into their 3 respective categories
         for row in file:
             temperature, growth_rate, bacteria = row.split()
-
             # We then test if the values are as they should be
             # If not, then we tell the user that there is a problem, what value is the problem and why.
+            # We then move on to the next line
             try: temperature = int(temperature)
             except:
-                print(f"This temperature value: {temperature} in {filename} is not an integer value.")
-                return "Error"
+                print(f"This temperature value: {temperature} in {filename} is not an integer value")
+                print("This row wont included in the data")
+
+                continue
 
             if temperature < 10 or temperature > 60 :
                 print(f"This temperature value: {temperature} in {filename} is either below 10 or above 60.")
-                return "Error"
+                print("This row wont included in the data")
+                continue
 
             try: growth_rate = float(growth_rate)
             except:
                 print(f"This growth rate value: {growth_rate} in {filename} is not a float value.")
-                return "Error"
+                print("This row wont included in the data")
+                continue
 
             if growth_rate < 0:
                 print(f"This growth rate value: {growth_rate} in {filename} is not a positive value.")
-                return "Error"
+                print("This row wont included in the data")
+                continue
 
             try: bacteria = int(bacteria)
             except:
                 print(f"This bacteria value: {bacteria} is not an integer value")
-                return "Error"
+                print("This row wont included in the data")
+                continue
 
             if not int(bacteria) in bacteria_lookup.keys():
                 print(f"This bacteria value: {int(bacteria)} in {filename} is not between 1 and 4.")
-                return "Error"
+                print("This row wont included in the data")
+                continue
             # This row is not clean and can be added to the list
             data.append([temperature, growth_rate, bacteria])
     # At the end we return the full list with all the data in an array
@@ -230,68 +237,71 @@ def checkIfValidNumber(value, lowerBound, upperBound):
         print("You need to type a valid number"); return "Error"
     return intValue
 
-## Main program:
-# This is the time of which the main program will begin.
-# First we create a variable to keep track whether the data has been loaded or not.
-# We set it to False as the data has not yet been loaded
-isDataLoaded = False
+def main():
+    ## Main program:
+    # This is the time of which the main program will begin.
+    # First we create a variable to keep track whether the data has been loaded or not.
+    # We set it to False as the data has not yet been loaded
+    isDataLoaded = False
 
-# Introduction to the program
-print("Welcome to our program :-).\n"
-      "This program is used to analyze bacteria-data.\n"
-        "You need to load in data before any other action is possible")
+    # Introduction to the program
+    print("Welcome to our program :-).\n"
+          "This program is used to analyze bacteria-data.\n"
+            "You need to load in data before any other action is possible")
 
-# This loop will until the user wants to quit
-while True:
-    # The user is prompted which action should be taken
-    action = input("Please choose what you want to do by typing the number "
-                   "corresponding to the action you would like to take:\n"
-                "1. Load data\n"
-                "2. Filter data\n"
-                "3. Show statistics\n"
-                "4. Create plots\n"
-                "5. Exit program\n")
-    # We then check that this input is a number between 1 and 5.
-    action = checkIfValidNumber(action, 1, 5)
-    # If the user want to quit, the program loop will stop and therefore also the program.
-    if action == 5:
-        break
+    # This loop will until the user wants to quit
+    while True:
+        # The user is prompted which action should be taken
+        action = input("Please choose what you want to do by typing the number "
+                       "corresponding to the action you would like to take:\n"
+                    "1. Load data\n"
+                    "2. Filter data\n"
+                    "3. Show statistics\n"
+                    "4. Create plots\n"
+                    "5. Exit program\n")
+        # We then check that this input is a number between 1 and 5.
+        action = checkIfValidNumber(action, 1, 5)
+        # If the user want to quit, the program loop will stop and therefore also the program.
+        if action == 5:
+            break
 
-    if action == 1:
-        # If the users wants to load in data
-        # the user is prompted to write the filename of the file which should be loaded
-        filename = input("You have chosen to load data.\n"
-                         "Please write the filename of the file that should be loaded in:\n")
-        # We then try to load the file
-        # If the filename does not exist or is not a string, no data will be loaded and the user til be informed
-        # If the filename is correct, the original data is assigned to data
-        # As this is the variable for the unfiltered data.
-        # We now also know that the data has been loaded and user is informed.
-        try: data = dataLoad(filename); originalData = data; isDataLoaded = True; print("Your data was successfully loaded")
-        except: print("You need to type in a valid filename")
+        if action == 1:
+            # If the users wants to load in data
+            # the user is prompted to write the filename of the file which should be loaded
+            filename = input("You have chosen to load data.\n"
+                             "Please write the filename of the file that should be loaded in:\n")
+            # We then try to load the file
+            # If the filename does not exist or is not a string, no data will be loaded and the user til be informed
+            # If the filename is correct, the original data is assigned to data
+            # As this is the variable for the unfiltered data.
+            # We now also know that the data has been loaded and user is informed.
+            try: data = dataLoad(filename); originalData = data; isDataLoaded = True; print("Your data was successfully loaded")
+            except: print("You need to type in a valid filename")
 
-    # The rest of the actions are only allowed if the data has been loaded
-    if isDataLoaded:
-        if action == 2:
-            # if the user wants to filter the data, then we try to perform the function
-            # if we get an error, which will happen if the user does not input a number between 1 and 4
-            # the user will already be informed and nothing should happen
-            try: data = dataFilter(originalData, data)
-            except: None
+        # The rest of the actions are only allowed if the data has been loaded
+        if isDataLoaded:
+            if action == 2:
+                # if the user wants to filter the data, then we try to perform the function
+                # if we get an error, which will happen if the user does not input a number between 1 and 4
+                # the user will already be informed and nothing should happen
+                try: data = dataFilter(originalData, data)
+                except: None
 
-        if action == 3:
-            # if the user wants to get statistic, then we try to perform the function
-            # if we get an error, which will happen if the user does not input a number between 1 and 8
-            # the user will already be informed and nothing should happen
-            try: dataStatistics(data)
-            except: None
+            if action == 3:
+                # if the user wants to get statistic, then we try to perform the function
+                # if we get an error, which will happen if the user does not input a number between 1 and 8
+                # the user will already be informed and nothing should happen
+                try: dataStatistics(data)
+                except: None
 
-        if action == 4:
-            # if the user wants to have their data plotted
-            # then another window will open and the user will be informed
-            dataPlot(data)
-            print("Your data has been plotted and will open in a new window.")
-    # if the data has not been loaded the user will get a reminder before the loop resets.
-    else:
-        print("You need to load in your data before you can take any other action.")
+            if action == 4:
+                # if the user wants to have their data plotted
+                # then another window will open and the user will be informed
+                dataPlot(data)
+                print("Your data has been plotted and will open in a new window.")
+        # if the data has not been loaded the user will get a reminder before the loop resets.
+        else:
+            print("You need to load in your data before you can take any other action.")
+
+main()
 
