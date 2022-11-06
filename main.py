@@ -1,19 +1,28 @@
 # This function only runs in Python 3
 
-# Loading the numpy to use for calculations of statistics
 import numpy as np
-# Loading matplotlib.pyplot to make plots
 import matplotlib.pyplot as plt
 
-# We make a simple bacteria look up dictionary to be able to
-# find the correct name according to the number of the bacteria
-bacteria_lookup = {1: "Salmonella enterica",
-                    2: "Bacillus cereus",
-                    3: "Listeria",
-                    4: "Brochothrix thermosphacta"}
+# Bacteria lookup matching the corresponding number to the bacteria name.
+bacteria_lookup = {
+    1: "Salmonella enterica",
+    2: "Bacillus cereus",
+    3: "Listeria",
+    4: "Brochothrix thermosphacta"}
+
+# Statistic lookup matching an input number to a statistic.
+statisticLookup = {
+    1: "Mean Temperature",
+    2: "Mean Growth rate",
+    3: "Std Temperature",
+    4: "Std Growth rate",
+    5: "Rows",
+    6: "Mean Cold Growth rate",
+    7: "Mean Hot Growth rate",
+    8: "Go back to the main menu"}
 
 # This function loads the data.
-# It takes a string as an input and returns an array.
+# It takes a filename string as input and returns a numpy array.
 def dataLoad(filename : str) -> np.ndarray:
     # An empty list is created to store the data as it is loaded in
     data = []
@@ -22,9 +31,9 @@ def dataLoad(filename : str) -> np.ndarray:
         # For every row in the file we split the row into its 3 respective categories
         for row in file:
             temperature, growth_rate, bacteria = row.split()
-            # The values are tested on the conditions given
-            # If an error is encountered we inform the user what the error is.
-            # And we continue to the next iteration without appending the values.
+            # Acting like guard clauses we test the values on the given conditions
+            # and if an error is encountered we inform the user what the error is
+            # and continue to the next iteration without appending the values.
             try: temperature = int(temperature)
             except:
                 print(f"This temperature value: {temperature} in {filename} is not an integer value")
@@ -59,24 +68,14 @@ def dataLoad(filename : str) -> np.ndarray:
                 continue
             # After testing we can append the data
             data.append([temperature, growth_rate, bacteria])
-    # At the end we return the full list with all the data in an array
     return np.array(data)
 
-# This function will show certain statistics about the data.
-# It takes the data as an array as an input and only returns None in the case that
-# the user wants to go back to the main menu. Else nothing is returned.
+
+# This function takes a numpy array as input and prints the statistic chose with the input() function.
 def dataStatistics(data : np.ndarray):
     # First the staticstic value, which is soon to be calculated, is initiated.
     statisticValue = 0
-    # Here we create a statistic lookup to get the right statistic based on the user input.
-    statisticLookup = {1: "Mean Temperature",
-                       2: "Mean Growth rate",
-                       3: "Std Temperature",
-                       4: "Std Growth rate",
-                       5: "Rows",
-                       6: "Mean Cold Growth rate",
-                       7: "Mean Hot Growth rate",
-                       8: "Go back to the main menu"}
+    
     # We then get the input from the user on which statistic the user would like:
     statisticInput = input("Type the number corresponding to the statistic you want to be shown:\n"
                       "1. Mean Temperature\n"
@@ -87,13 +86,13 @@ def dataStatistics(data : np.ndarray):
                       "6. Mean Cold Growth rate\n"
                       "7. Mean Hot Growth rate\n"
                       "8. Go back to the main menu\n")
-    # We then check that this value is a number between 1 and 8.
+    # We then check that this value is corresponds to one of the choices from 1 to 8.
     statistic = checkIfValidNumber(statisticInput, 1, 8)
-    # We then, based on the input, compute the desired statistic
-    # and assigns it to the statisticValue variable.
+    # Based on the input we compute the desired statistic
+    # and assign it to the statisticValue variable.
     if statistic == 1:
-         statisticValue = np.mean(data[:,0])
-    elif statistic == 2:
+         statisticValue = np.mean(data[:,0])  # Numpy issues a warning itself if the mean is taken of an empty array.
+    elif statistic == 2:                      # We've chosen to ignore that warning, assuming you wouldn't give such input.
         statisticValue = np.mean(data[:,1])
     elif statistic == 3:
         statisticValue = np.std(data[:,0])
@@ -120,8 +119,6 @@ def dataStatistics(data : np.ndarray):
 # It opens a new window and displays 2 plots in it.
 def dataPlot(data : np.ndarray) -> None:
     # Creating and selecting the right subplot:
-    if plt.get_fignums():
-        plt.close()
     plt.subplot(2, 1, 1)
     # A small dictionary is made to use to the correct color
     colors = {1: "tab:red", 2: "tab:orange", 3: "tab:green", 4: "tab:blue"}
@@ -145,12 +142,14 @@ def dataPlot(data : np.ndarray) -> None:
     for Bacteria in range(1,5):
         xValuesBacteria = [data[i,0] for i in range(len(data)) if data[i,2] == Bacteria]
         yValuesBacteria = [data[i,1] for i in range(len(data)) if data[i,2] == Bacteria]
-        plt.plot(xValuesBacteria, yValuesBacteria, colors[Bacteria], label=f"{bacteria_lookup[Bacteria]}")
+        plt.plot(xValuesBacteria, yValuesBacteria, colors[Bacteria], label=f"{bacteria_lookup[Bacteria]}", linewidth=3)
     # We then change the title, x label, y label.
     plt.title("Growth Rate by Temperature for 4 bacteria")
     plt.xlabel("Temperature")
     plt.ylabel("Growth Rate")
     plt.xlim(0,60)
+    plt.gca().set_ylim(bottom=0, auto=None)
+
     # We also make a legend to make sure the user easily can see
     # which line in the plot is corresponds to the different bacteria
     plt.legend(loc=1, fontsize=6)
@@ -223,11 +222,11 @@ def dataFilter(data : np.ndarray, filtered_data : np.ndarray) -> np.ndarray:
 def checkIfValidNumber(value, lowerBound, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
-    except: print("You need to type a number"); return None
+    except: print("Invalid input, try with an integer"); return None
 
     # If the input isn't between lower and upper bound, print error and return none.
     if not (lowerBound <= intValue and intValue <= upperBound):
-        print("You need to type a valid number"); return None
+        print("Invalid number, try another number"); return None
     return intValue
 
 def main():
@@ -238,9 +237,11 @@ def main():
     isDataLoaded = False
 
     # Introduction to the program
-    print("Welcome to our program :-).\n"
-          "This program is used to analyze bacteria-data.\n"
-            "You need to load in data before any other action is possible")
+    print(
+        "Welcome to our program :-).\n"
+        "This program is used to analyze bacteria-data.\n"
+        "You need to load in data before any other action is possible\n"
+    )
 
     # This loop will until the user wants to quit
     while True:
