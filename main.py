@@ -120,25 +120,26 @@ def dataStatistics(data : np.ndarray):
 # It opens a new window and displays 2 plots in it.
 def dataPlot(data : np.ndarray) -> None:
     # Creating and selecting the right subplot:
+    if plt.get_fignums():
+        plt.close()
     plt.subplot(2, 1, 1)
-    
+    # A small dictionary is made to use to the correct color
+    colors = {1: "tab:red", 2: "tab:orange", 3: "tab:green", 4: "tab:blue"}
     # Creating lists with the x and y values
     x_values = list(bacteria_lookup.values())
     y_values = [np.count_nonzero(data[:,2] == i) for i in [1,2,3,4]]
     # plotting as a bar plot
-    plt.bar(x_values, y_values)
+    plt.bar(x_values, y_values, width=0.5,color=colors.values())
     # Here we change the title, x label, size of x values, y label
     # and make the layout tight to make sure there are space for both plot
     plt.title("Number of bacteria")
     plt.xlabel("Bacteria")
     plt.xticks(size = 8)
     plt.ylabel("Number of instances")
-    plt.tight_layout()
+    plt.tight_layout(pad=3.0)
 
     # Plotting Growth rate by temperature
     plt.subplot(2, 1, 2)
-    # A small dictionary is made to use to the correct color based on the bacteriatype
-    colors = {1: "r", 2: "y", 3: "g", 4: "b"}
     # We then loop through every kind of bacteria and plot their data.
     data = data[data[:,0].argsort()]
     for Bacteria in range(1,5):
@@ -149,6 +150,7 @@ def dataPlot(data : np.ndarray) -> None:
     plt.title("Growth Rate by Temperature for 4 bacteria")
     plt.xlabel("Temperature")
     plt.ylabel("Growth Rate")
+    plt.xlim(0,60)
     # We also make a legend to make sure the user easily can see
     # which line in the plot is corresponds to the different bacteria
     plt.legend(loc=1, fontsize=6)
@@ -224,7 +226,7 @@ def checkIfValidNumber(value, lowerBound, upperBound):
     except: print("You need to type a number"); return None
 
     # If the input isn't between lower and upper bound, print error and return none.
-    if not (lowerBound < intValue and intValue < upperBound):
+    if not (lowerBound <= intValue and intValue <= upperBound):
         print("You need to type a valid number"); return None
     return intValue
 
@@ -293,11 +295,12 @@ def main():
             if action == 4:
                 # if the user wants to have their data plotted
                 # then another window will open and the user will be informed
-                dataPlot(data)
                 print("Your data has been plotted and will open in a new window.")
+                print("To continue close the window.")
+                dataPlot(data)
         # if the data has not been loaded the user will get a reminder before the loop resets.
         else:
             print("You need to load in your data before you can take any other action.")
 
-# main()
+main()
 
