@@ -7,18 +7,33 @@ def print_statistics(tvec, data):
         zone = i+1
         statistics.append(
             [zone,
-            min(current_row),
-            np.quartile(current_row, 0.25),
-            np.quartile(current_row, 0.50),
-            np.quartile(current_row, 0.75),
-            max(current_row)
+            np.min(current_row),
+            np.quantile(current_row, 0.25),
+            np.quantile(current_row, 0.50),
+            np.quantile(current_row, 0.75),
+            np.max(current_row)
         ])
-
+    statistics.append(
+            ["All",
+            np.min(tvec),
+            np.quantile(tvec, 0.25),
+            np.quantile(tvec, 0.50),
+            np.quantile(tvec, 0.75),
+            np.max(tvec)
+            ])
     # printing the statistics:
-    headers = ["Zone", "Minimum", "1. kvartil", "2. kvartil", "3. kvartil", "Maximum"]
+    splitline = "-"*60
+    print(splitline)
+    headers = ["Zone", "Minimum", "1. quart", "2. quart", "3. quart", "Maximum"]
     for header in headers:
-        print(f"{header:>10}", end="")
-    
+        print(f"{header:<10}", end="")
+    print("\n" + splitline)
+    for x in range(5):
+        for statistic in statistics[x]:
+            print(f"{statistic:<10}", end="")
+        print("\n", end="")
+    print(splitline)
+
 from load_measurements import load_measurements
 tvec, data = load_measurements("testdata1.csv", fmode=None)
 print_statistics(tvec, data)

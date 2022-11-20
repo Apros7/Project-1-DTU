@@ -3,10 +3,11 @@ import pandas as pd
 import os
 
 
-def load_measurements(filename, fmode):
-    # abspath = os.path.dirname(os.path.abspath(__file__))
-    # path = abspath + "\\" + filename
-    data = [row.split(",") for row in open(filename, "r")]
+def load_measurements(filename, fmode=None):
+    abspath = os.path.dirname(os.path.abspath(__file__))
+    path = abspath + "/" + filename
+
+    data = [row.split(",") for row in open(path, "r")]
     data = np.array(data,dtype=float)
 
     if fmode == "drop":
