@@ -3,7 +3,7 @@ import numpy as np
 def print_statistics(tvec, data):
     statistics = []
     for i in range(4):
-        current_row = list(tvec[i])
+        current_row = list(data[i])
         zone = i+1
         statistics.append(
             [zone,
@@ -33,8 +33,4 @@ def print_statistics(tvec, data):
             print(f"{statistic:<10}", end="")
         print("\n", end="")
     print(splitline)
-
-from load_measurements import load_measurements
-tvec, data = load_measurements("testdata1.csv", fmode=None)
-print_statistics(tvec, data)
     

@@ -1,4 +1,5 @@
 from load_measurements import load_measurements
-tvec, data = load_measurements("testdata1.csv", fmode=None)
+from print_statistics import print_statistics
 
-print(tvec)
+def main():
+    pass
