@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 import os
 
 
@@ -16,7 +15,7 @@ def load_measurements(filename, fmode=None):
 
     if fmode == "forward fill" and np.all(data[0] != -1): num = -1
     elif fmode == "backward fill" and np.all(data[-1] != -1): num = 1
-    else:
+    elif fmode != "drop":
         data = data[np.all(data != -1, axis=1)]
         print("errmsg")
 
