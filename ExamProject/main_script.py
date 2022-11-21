@@ -144,6 +144,17 @@ err_badstat = "Error: Invalid statistic, try another."
 err_nofile = "Error: File not found, try another filename"
 err_badfile = "Error: Invalid file, try another file" 
 
+# This function is introduced to simplify the code related to our command-line interface.
+def checkIfValidNumber(value, lowerBound, upperBound):
+    # If the input can't be converted to an int, print error and return none.
+    try: intValue = int(value)
+    except: print("Invalid input, try with an integer"); return None
+
+    # If the input isn't between lower and upper bound, print error and return none.
+    if not (lowerBound <= intValue and intValue <= upperBound):
+        print("Invalid number, try another number"); return None
+    return intValue
+
 
 # def try_options(inp: str, inp_options: list):
 #     try: out = inp_options[int(inp)]
@@ -155,14 +166,11 @@ options = ["load data", "aggregate data", "display statistics", "visualize", "qu
 
 def main2():
     data = None
-
-
-
     while True:
         # correct input
-        inp = options[0]
+        inp = options[3]
 
-        if inp == "load data"
+        if inp == "load data":
             while True:
                 data = None
                 new_data = None
@@ -172,8 +180,16 @@ def main2():
                     data = new_data
                     break
         elif inp == "aggregate data":
+            pass
         elif inp == "display statistics":
+            pass
         elif inp == "visualize":
+            visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Back"]
+            set_display
+            print("You have chosen to visualize your electricity consumption.\nPlease choose your next action:")
+            for i in range(len(visualize_options)):
+                print(f"{i}. {visualize_options[i]}")
+            visualize_input = checkIfValidNumber(input(), 0, 4)
         elif inp == "quit":
             return
 
