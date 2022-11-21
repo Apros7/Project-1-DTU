@@ -122,6 +122,19 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     plt.show()
 
 
+def fix_tvec(tvec):
+    start_tvec = tvec[0,:]
+    new_tvec = []
+    for row in tvec:
+        year, month, day, hour, minute, _= row-start_tvec
+        month = 12*year + month
+        day = 31*month + day
+        hour = 24*day + hour
+        minute = 60*hour + minute
+        new_tvec.append(minute)
+
+
+
 def set_display(display_str, prefix, windows, back=True):
     if windows:
         os.system('cls')
@@ -143,11 +156,11 @@ err_badfile = "Error: Invalid file, try another file"
 def checkIfValidNumber(value, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
-    except: print("Invalid input, try with an integer"); return None
+    except: print(err_notint); return None
 
     # If the input isn't between lower and upper bound, print error and return none.
-    if not (0 <= intValue and intValue <= upperBound):
-        print("Invalid number, try another number"); return None
+    if not (lowerBound <= intValue and intValue <= upperBound and intValue != 9):
+        print(err_badrange); return None
     return intValue
 
 
@@ -185,9 +198,12 @@ def main2():
     else: windows = False
 
     while True:
-        prefix = "Intro hej hej du"
-        set_display(main_string, prefix, windows)
-        inp = checkIfValidNumber(input(), len(main_options))
+
+        # correct input
+        intro_message = "hej"
+        aggregated = False
+        set_display(main_string, intro_message, windows)
+        inp = checkIfValidNumber(input(),0,len(main_options))
         inp = main_options[inp]
         if inp == "load data":
             while True:
@@ -214,13 +230,19 @@ def main2():
                 tvec_a, data_a = aggregate_measurements(tvec, data)
 
         elif inp == "display statistics":
-            pass
+            print("Here is your statistic displayed in a table")
+            print_statistics(tvec, data)
         elif inp == "visualize":
-            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, prefix, windows)
+            if aggregated:
+                temp_tvec = tvec_a
+            else: 
+                temp_tvec = fix_tvec(tvec)
+            visualize_intro = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            set_display(visualize_string, visualize_intro, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
-            if visualize_input == back_val:
-                    break
+            if visualize_input == back_val: break
+            if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
+            else: plot_statistics(temp_tvec, data_a, time=period)
         elif inp == "quit":
             return
 
