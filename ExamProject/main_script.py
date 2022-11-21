@@ -140,13 +140,13 @@ err_nofile = "Error: File not found, try another filename"
 err_badfile = "Error: Invalid file, try another file" 
 
 # This function is introduced to simplify the code related to our command-line interface.
-def checkIfValidNumber(value, lowerBound, upperBound):
+def checkIfValidNumber(value, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
     except: print("Invalid input, try with an integer"); return None
 
     # If the input isn't between lower and upper bound, print error and return none.
-    if not (lowerBound <= intValue and intValue <= upperBound):
+    if not (0 <= intValue and intValue <= upperBound):
         print("Invalid number, try another number"); return None
     return intValue
 
@@ -155,6 +155,15 @@ numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumera
 
 main_options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
 main_string = numerated_str(main_options)
+
+aggregate_options = [
+    "Consumption per minute (no aggregation)",
+    "Consumption per hour"
+    "Consumption per day"
+    "Consumption per month"
+    "Hour-of-day consumption (hourly average)"
+]
+aggregate_string = numerated_str(aggregate_options)
 
 visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
 visualize_string = numerated_str(visualize_options)
@@ -167,26 +176,25 @@ def main2():
     tvec = None
     data = None
     back_val = 9
+    prefix = ""
+    suffix = ""
 
-    windows_string = input("Type anything and press enter if you are on a mac, else just press enter please :-)")
-    if windows_string == "":
-        windows = True
-    else:
-        windows = False
+    print("Type anything and press enter if you are on a mac, else just press enter please :-)")
+    windows_string = input()
+    if windows_string == "": windows = True
+    else: windows = False
 
     while True:
-
-        # correct input
-        intro_message = "hej"
-        set_display(main_string, intro_message, windows)
-        inp = checkIfValidNumber(input(),0,len(main_options))
+        prefix = "Intro hej hej du"
+        set_display(main_string, prefix, windows)
+        inp = checkIfValidNumber(input(), len(main_options))
         inp = main_options[inp]
         if inp == "load data":
             while True:
-                inp = int(input())
+                inp = checkIfValidNumber(input(), len(dir_options))
                 if inp == back_val:
                     break
-                inp = main_options[inp]
+                inp = dir_options[inp]
 
                 new_tvec, new_data = load_measurements
                 if new_data is None:
@@ -197,12 +205,19 @@ def main2():
                     break
         
         elif inp == "aggregate data":
-            pass
+            while True:
+                inp = checkIfValidNumber(input(), len(aggregate_options))
+                if inp == back_val:
+                    break
+                inp = aggregate_options[inp]
+
+                tvec_a, data_a = aggregate_measurements(tvec, data)
+
         elif inp == "display statistics":
             pass
         elif inp == "visualize":
-            visualize_intro = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, visualize_intro, windows)
+            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            set_display(visualize_string, prefix, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
             if visualize_input == back_val:
                     break
