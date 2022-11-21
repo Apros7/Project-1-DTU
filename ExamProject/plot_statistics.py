@@ -1,12 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from load_measurements import load_measurements
-tvec, data = load_measurements("testdata3.csv")
-
-
 # Tvec skal kun indeholde relevante tidsdata
-tvec = tvec[:, 4]
 
 def plot_statistics(tvec, data, zone="All", time="minutes"):
     title = "all zones"
@@ -31,7 +26,3 @@ def plot_statistics(tvec, data, zone="All", time="minutes"):
     plt.xlabel(f"Time in {time}")
     plt.ylabel("Energy used in Watt-hours")
     plt.show()
-
-
-    
-plot_statistics(tvec, data, zone=1)
