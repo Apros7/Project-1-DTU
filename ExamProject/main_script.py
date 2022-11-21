@@ -122,12 +122,14 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     plt.show()
 
 
-def set_display(display_str, prefix, suffix, back=True):
-    os.system('cls')
+def set_display(display_str, prefix, windows, back=True):
+    if windows:
+        os.system('cls')
+    else: 
+        os.system("clear")
     print(prefix,"\n")
     print(display_str)
-    print("←  Back\n") if back else None
-    print(suffix,"\n")
+    print("9. Back\n") if back else None
 
 
 err_nodata = "Error: This action can not be done before data is loaded."
@@ -154,7 +156,7 @@ numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumera
 main_options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
 main_string = numerated_str(main_options)
 
-visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Back"]
+visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
 visualize_string = numerated_str(visualize_options)
 
 dir_options = os.listdir(os.path.dirname(__file__))
@@ -166,16 +168,25 @@ def main2():
     data = None
     back_val = 9
 
-    while True:
-        # correct input
-        inp = options[checkIfValidNumber(input(),0,len())]
+    windows_string = input("Type anything and press enter if you are on a mac, else just press enter please :-)")
+    if windows_string == "":
+        windows = True
+    else:
+        windows = False
 
+    while True:
+
+        # correct input
+        intro_message = "hej"
+        set_display(main_string, intro_message, windows)
+        inp = checkIfValidNumber(input(),0,len(main_options))
+        inp = main_options[inp]
         if inp == "load data":
             while True:
                 inp = int(input())
                 if inp == back_val:
                     break
-                inp = options[inp]
+                inp = main_options[inp]
 
                 new_tvec, new_data = load_measurements
                 if new_data is None:
@@ -190,11 +201,11 @@ def main2():
         elif inp == "display statistics":
             pass
         elif inp == "visualize":
-            set_display
-            print("You have chosen to visualize your electricity consumption.\nPlease choose your next action:")
-            for i in range(len(visualize_options)):
-                print(f"{i}. {visualize_options[i]}")
-            visualize_input = checkIfValidNumber(input(), 0, 4)
+            visualize_intro = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            set_display(visualize_string, visualize_intro, windows)
+            visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
+            if visualize_input == back_val:
+                    break
         elif inp == "quit":
             return
 
