@@ -2,6 +2,20 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+numerated_str = lambda list, x=0: "".join(f"{idx + x}. {item}\n" for idx, item in enumerate(list))
+
+main_options = [
+    "Load data",
+    "Filter data",
+    "Display statistics",
+    "Generate plots",
+    "Quit"
+]
+main_string = numerated_str(main_options)
+
+dir_options = os.listdir(os.path.dirname(__file__))
+dir_string = numerated_str(dir_options)
+
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -122,19 +136,12 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     plt.show()
 
 
-def main():
-    tvec, data = load_measurements("2008.csv", "drop")
-    tvec_a, data_a, period = aggregate_measurements(tvec, data, "day")
-    print_statistics(tvec, data)
-    plot_statistics(tvec_a, data_a, zone=1, time=period)
-
-
-def set_display(display_str, prefix=None, suffix=None, back=True):
+def set_display(display_str, prefix, suffix, back=True):
     os.system('cls')
-    print(prefix,"\n") if prefix is not None else print("\n")
+    print(prefix,"\n")
     print(display_str)
     print("←  Back\n") if back else None
-    print(suffix,"\n") if suffix is not None else print("\n")
+    print(suffix,"\n")
 
 
 err_nodata = "Error: This action can not be done before data is loaded."
@@ -165,20 +172,29 @@ def checkIfValidNumber(value, lowerBound, upperBound):
 options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
 
 def main2():
+    tvec = None
     data = None
+    back_val = 9
+
     while True:
         # correct input
-        inp = options[3]
+        inp = options[int(input())]
 
         if inp == "load data":
             while True:
-                data = None
-                new_data = None
-                if new_data is None and data is not None:
+                inp = int(input())
+                if inp == back_val:
                     break
+                inp = options[inp]
+
+                new_tvec, new_data = load_measurements
+                if new_data is None:
+                    set_display()
+                    continue
                 else:
-                    data = new_data
+                    tvec, data = new_tvec, new_data
                     break
+        
         elif inp == "aggregate data":
             pass
         elif inp == "display statistics":
