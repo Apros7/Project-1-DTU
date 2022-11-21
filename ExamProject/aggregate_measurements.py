@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-def aggregate_measurements(tvec, data, period):
-    
-
-
-=======
 import numpy as np
 
 def aggregate_measurements(tvec, data, period):
@@ -28,5 +22,4 @@ def aggregate_measurements(tvec, data, period):
         data_a = np.append(data_a, np.sum(data[mask], axis=0))
     tvec_a = np.reshape(tvec_a, (-1,6))
     data_a = np.reshape(data_a, (-1,4))
->>>>>>> 329f552ad97b7fe59761c0332d6fcc8b65793698
     return tvec_a, data_a
