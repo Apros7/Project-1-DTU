@@ -168,7 +168,7 @@ def main2():
 
     while True:
         # correct input
-        inp = options[int(input())]
+        inp = options[checkIfValidNumber(input(),0,len())]
 
         if inp == "load data":
             while True:
