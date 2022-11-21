@@ -3,7 +3,7 @@ import numpy as np
 def print_statistics(tvec, data):
     statistics = []
     for i in range(4):
-        current_row = list(data[i])
+        current_row = list(data[i,:])
         zone = i+1
         statistics.append(
             [zone,
