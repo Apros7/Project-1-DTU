@@ -2,20 +2,6 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
-numerated_str = lambda list, x=0: "".join(f"{idx + x}. {item}\n" for idx, item in enumerate(list))
-
-main_options = [
-    "Load data",
-    "Filter data",
-    "Display statistics",
-    "Generate plots",
-    "Quit"
-]
-main_string = numerated_str(main_options)
-
-dir_options = os.listdir(os.path.dirname(__file__))
-dir_string = numerated_str(dir_options)
-
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -163,13 +149,17 @@ def checkIfValidNumber(value, lowerBound, upperBound):
     return intValue
 
 
-# def try_options(inp: str, inp_options: list):
-#     try: out = inp_options[int(inp)]
-#     except ValueError: return err_notint, None, inp
-#     except IndexError: return err_badrange, None, inp
-#     else:              return None, out, inp
+numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
 
-options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
+main_options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
+main_string = numerated_str(main_options)
+
+visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Back"]
+visualize_string = numerated_str(visualize_options)
+
+dir_options = os.listdir(os.path.dirname(__file__))
+dir_string = numerated_str(dir_options)
+
 
 def main2():
     tvec = None
@@ -200,7 +190,6 @@ def main2():
         elif inp == "display statistics":
             pass
         elif inp == "visualize":
-            visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4", "Back"]
             set_display
             print("You have chosen to visualize your electricity consumption.\nPlease choose your next action:")
             for i in range(len(visualize_options)):
