@@ -42,13 +42,10 @@ def aggregate_measurements(tvec, data, period):
     data_a = np.array([])
     tvec_a = np.array([])
     for n in nums:
-        list1 = [0]*6
-        list1[col] = n
-        tvec_a = np.append(tvec_a, list1)
+        tvec_a = np.append(tvec_a, n)
 
         mask = tvec[:,col] == n
         data_a = np.append(data_a, np.sum(data[mask], axis=0))
-    tvec_a = np.reshape(tvec_a, (-1,6))
     data_a = np.reshape(data_a, (-1,4))
     return tvec_a, data_a, period
 
@@ -89,7 +86,7 @@ def print_statistics(_, data):
 
 
 # Tvec skal kun indeholde relevante tidsdata
-def plot_statistics(tvec, data, zone="All", time="minutes"):
+def plot_statistics(tvec, data, zone="All", time="minute"):
     title = "all zones"
     if zone != "All":
         data = data[:, zone-1]
@@ -100,17 +97,28 @@ def plot_statistics(tvec, data, zone="All", time="minutes"):
     for dim in np.shape(data): 
         size *= dim
 
-    number_of_zones = 1
+    labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
+    colors = ["r", "g", "b", "y"]
+    width = 0.2
     if title == "all zones":
-        number_of_zones = 4
-    for i in range(number_of_zones):
-        if size < 25:
-            plt.bar(tvec, data)
-        else:
-            plt.plot(data)
-    plt.title(f"Consumption for {title} per {time}")
-    plt.xlabel(f"Time ({time})")
-    plt.ylabel("Energy (kWh)")
+        for i in range(4):
+            if size < 25:
+                plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
+            else:
+                plt.plot(tvec, data[:,i], label=labels[i], color=colors[i])
+    if size < 25:
+        plt.bar(tvec, data)
+    else:
+        plt.plot(tvec, data, label=f"Zone {zone}", color="r")
+
+    plt.title(f"Consumption for {title} per {time}s")
+    plt.xlabel(f"Time ({time}s)")
+    plt.ylabel("Energy (Wh)")
+    plt.tight_layout()
+    plt.xticks(tvec)
+    if size >= 25:
+        plt.grid()
+    plt.legend()
     plt.show()
 
 
@@ -118,7 +126,7 @@ def main():
     tvec, data = load_measurements("2008.csv", "drop")
     tvec_a, data_a, period = aggregate_measurements(tvec, data, "day")
     print_statistics(tvec, data)
-    plot_statistics(tvec_a, data_a, time=period)
+    plot_statistics(tvec_a, data_a, zone=1, time=period)
 
 
 if __name__ == "__main__":
