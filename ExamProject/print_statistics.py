@@ -15,11 +15,11 @@ def print_statistics(tvec, data):
         ])
     statistics.append(
             ["All",
-            np.min(tvec),
-            np.quantile(tvec, 0.25),
-            np.quantile(tvec, 0.50),
-            np.quantile(tvec, 0.75),
-            np.max(tvec)
+            np.min(data),
+            np.quantile(data, 0.25),
+            np.quantile(data, 0.50),
+            np.quantile(data, 0.75),
+            np.max(data)
             ])
     # printing the statistics:
     splitline = "-"*60
