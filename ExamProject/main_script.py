@@ -129,5 +129,54 @@ def main():
     plot_statistics(tvec_a, data_a, zone=1, time=period)
 
 
+def set_display(display_str, prefix=None, suffix=None, back=True):
+    os.system('cls')
+    print(prefix,"\n") if prefix is not None else print("\n")
+    print(display_str)
+    print("←  Back\n") if back else None
+    print(suffix,"\n") if suffix is not None else print("\n")
+
+
+err_nodata = "Error: This action can not be done before data is loaded."
+err_notint = "Error: Invalid input, try with an integer."
+err_badrange = "Error: Number not in range, try another number"
+err_badstat = "Error: Invalid statistic, try another."
+err_nofile = "Error: File not found, try another filename"
+err_badfile = "Error: Invalid file, try another file" 
+
+
+# def try_options(inp: str, inp_options: list):
+#     try: out = inp_options[int(inp)]
+#     except ValueError: return err_notint, None, inp
+#     except IndexError: return err_badrange, None, inp
+#     else:              return None, out, inp
+
+options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
+
+def main2():
+    data = None
+
+
+
+    while True:
+        # correct input
+        inp = options[0]
+
+        if inp == "load data"
+            while True:
+                data = None
+                new_data = None
+                if new_data is None and data is not None:
+                    break
+                else:
+                    data = new_data
+                    break
+        elif inp == "aggregate data":
+        elif inp == "display statistics":
+        elif inp == "visualize":
+        elif inp == "quit":
+            return
+
+
 if __name__ == "__main__":
-    main()
+    main2()
