@@ -166,7 +166,7 @@ def checkIfValidNumber(value, upperBound):
 
 numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
 
-main_options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
+main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
 main_string = numerated_str(main_options)
 
 aggregate_options = [
@@ -205,7 +205,8 @@ def main2():
         set_display(main_string, intro_message, windows)
         inp = checkIfValidNumber(input(),0,len(main_options))
         inp = main_options[inp]
-        if inp == "load data":
+        
+        if inp == "Load Data":
             while True:
                 inp = checkIfValidNumber(input(), len(dir_options))
                 if inp == back_val:
@@ -220,7 +221,7 @@ def main2():
                     tvec, data = new_tvec, new_data
                     break
         
-        elif inp == "aggregate data":
+        elif inp == "Aggregate Data":
             while True:
                 inp = checkIfValidNumber(input(), len(aggregate_options))
                 if inp == back_val:
@@ -229,21 +230,23 @@ def main2():
 
                 tvec_a, data_a = aggregate_measurements(tvec, data)
 
-        elif inp == "display statistics":
+        elif inp == "Display Statistics":
             print("Here is your statistic displayed in a table")
             print_statistics(tvec, data)
+        
         elif inp == "visualize":
             if aggregated:
                 temp_tvec = tvec_a
             else: 
                 temp_tvec = fix_tvec(tvec)
-            visualize_intro = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, visualize_intro, windows)
+            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            set_display(visualize_string, prefix, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
             if visualize_input == back_val: break
             if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
             else: plot_statistics(temp_tvec, data_a, time=period)
-        elif inp == "quit":
+        
+        elif inp == "Quit":
             return
 
 
