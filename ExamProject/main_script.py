@@ -2,6 +2,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+# import platform
+# platform.system
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -153,7 +155,7 @@ err_nofile = "Error: File not found, try another filename"
 err_badfile = "Error: Invalid file, try another file" 
 
 # This function is introduced to simplify the code related to our command-line interface.
-def checkIfValidNumber(value, upperBound):
+def checkIfValidNumber(value, lowerBound, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
     except: print(err_notint); return None
@@ -184,8 +186,11 @@ visualize_string = numerated_str(visualize_options)
 dir_options = os.listdir(os.path.dirname(__file__))
 dir_string = numerated_str(dir_options)
 
+fmode_options = ["forward fill", "backward fill", "drop"]
+fmode_string = numerated_str(fmode_options)
 
-def main2():
+
+def main():
     tvec = None
     data = None
     back_val = 9
@@ -207,14 +212,20 @@ def main2():
         inp = main_options[inp]
         if inp == "load data":
             while True:
-                inp = checkIfValidNumber(input(), len(dir_options))
+                set_display(dir_string, prefix, windows)
+
+                inp = checkIfValidNumber(input(), 0, len(dir_options))
                 if inp == back_val:
                     break
                 inp = dir_options[inp]
 
-                new_tvec, new_data = load_measurements
+                set_display(fmode_string, prefix, windows)
+                while True:
+                    
+
+                new_tvec, new_data = load_measurements(inp, )
                 if new_data is None:
-                    set_display()
+                    set_display(aggregate_string, prefix, windows)
                     continue
                 else:
                     tvec, data = new_tvec, new_data
@@ -222,7 +233,9 @@ def main2():
         
         elif inp == "aggregate data":
             while True:
-                inp = checkIfValidNumber(input(), len(aggregate_options))
+                set_display(aggregate_string, prefix, windows)
+
+                inp = checkIfValidNumber(input(), 0, len(aggregate_options))
                 if inp == back_val:
                     break
                 inp = aggregate_options[inp]
@@ -248,4 +261,4 @@ def main2():
 
 
 if __name__ == "__main__":
-    main2()
+    main()
