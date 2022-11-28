@@ -204,6 +204,7 @@ def main():
     data = None
     prefix = ""
     suffix = ""
+    period = "minute"
 
     print("Type anything and press enter if you are on a mac, else just press enter please :-)")
     windows_string = input()
@@ -269,9 +270,9 @@ def main():
                     break
                 elif inp is None:
                     continue
-                inp = aggregate_dir[inp]
+                out = aggregate_dir[inp]
 
-                tvec_a, data_a = aggregate_measurements(tvec, data)
+                tvec_a, data_a, period = aggregate_measurements(tvec, data, out)
 
         elif inp == "Display Statistics":
             if windows:
