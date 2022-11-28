@@ -136,7 +136,6 @@ def fix_tvec(tvec):
         new_tvec.append(minute)
 
 
-
 def set_display(display_str, prefix, windows, back=True):
     if windows:
         os.system('cls')
@@ -186,8 +185,21 @@ visualize_string = numerated_str(visualize_options)
 dir_options = os.listdir(os.path.dirname(__file__))
 dir_string = numerated_str(dir_options)
 
-fmode_options = ["forward fill", "backward fill", "drop"]
+fmode_options = [
+    "Fill forward (replace corrupt measurement with latest valid measurement)",
+    "Fill backward (replace corrupt measurement with next valid measurement)",
+    "Delete corrupt measurements"]
+fmode_dir = ["forward fill", "backward fill", "drop"]
 fmode_string = numerated_str(fmode_options)
+
+period_options = [
+    "Consumption per minute (no aggregation)",
+    "Consumption per hour",
+    "Consumption per day",
+    "Consumption per month",
+    "Hour-of-day consumption (hourly average)"]
+period_dir = ["none", "hour", "day", "month", "hour of the day"]
+period_string = numerated_str(period_options)
 
 
 def main():
@@ -218,11 +230,20 @@ def main():
                 inp = checkIfValidNumber(input(), 0, len(dir_options))
                 if inp == back_val:
                     break
+                if inp is None:
+                    continue
                 inp = dir_options[inp]
 
-                set_display(fmode_string, prefix, windows)
                 while True:
-                    
+                    set_display(fmode_string, prefix, windows)
+                    fmode_inp = checkIfValidNumber(input(), 0, len(fmode_options))
+                    if fmode_inp == back_val:
+                        break
+                    fmode = fmode_dir[fmode_inp]
+                    if fmode_inp is not None:
+                        break
+
+                set_display(dir_string, prefix, windows)
 
                 new_tvec, new_data = load_measurements(inp, )
                 if new_data is None:
