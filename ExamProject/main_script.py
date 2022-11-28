@@ -209,7 +209,8 @@ fmode_string = numerated_str(fmode_options)
 def main():
     tvec = None
     data = None
-    prefix = ""
+    prefix = """Hello world! This is our program for Analysis of Household Electricity Consumption.
+    Press the number corresponding to the action you want to take:"""
     suffix = ""
     period = "minute"
     aggregated = False
@@ -220,10 +221,8 @@ def main():
         windows = False
 
     while True:
-
         # correct input
-        intro_message = "hej"
-        set_display(main_string, intro_message, suffix, windows)
+        set_display(main_string, prefix, suffix, windows, back=False)
         inp, suffix = checkIfValidNumber(input(),0,len(main_options))
 
         if inp == back_val:
