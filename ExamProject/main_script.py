@@ -267,8 +267,13 @@ def main():
         elif inp == "Display Statistics":
             print("Here is your statistic displayed in a table")
             print_statistics(tvec, data)
+            while True:
+                print("9. Back")
+                if input() == back_val:
+                    break
+
         
-        elif inp == "visualize":
+        elif inp == "Visualize":
             if aggregated:
                 temp_tvec = tvec_a
             else: 
