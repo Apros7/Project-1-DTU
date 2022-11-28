@@ -40,7 +40,7 @@ def aggregate_measurements(tvec, data, period):
     if period == "hour of the day":
         col = 3
     if period == "minute":
-        return tvec, data, period
+        return fix_tvec(tvec), data, period
     
     nums = np.unique(tvec[:,col])
     data_a = np.array([])
@@ -110,10 +110,11 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
                 plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
             else:
                 plt.plot(tvec, data[:,i], label=labels[i], color=colors[i])
-    if size < 25:
-        plt.bar(tvec, data)
-    else:
-        plt.plot(tvec, data, label=f"Zone {zone}", color="r")
+    else: 
+        if size < 25:
+            plt.bar(tvec, data)
+        else:
+            plt.plot(tvec, data, label=f"Zone {zone}", color="r")
 
     plt.title(f"Consumption for {title} per {time}s")
     plt.xlabel(f"Time ({time}s)")
@@ -136,6 +137,7 @@ def fix_tvec(tvec):
         hour = 24*day + hour
         minute = 60*hour + minute
         new_tvec.append(minute)
+    return new_tvec
 
 
 def set_display(display_str, prefix, suffix, windows, back=True):
@@ -207,6 +209,7 @@ def main():
     prefix = ""
     suffix = ""
     period = "minute"
+    aggregated = False
 
     print("Type anything and press enter if you are on a mac, else just press enter please :-)")
     windows_string = input()
@@ -217,7 +220,6 @@ def main():
 
         # correct input
         intro_message = "hej"
-        aggregated = False
         set_display(main_string, intro_message, suffix, windows)
         inp, suffix = checkIfValidNumber(input(),0,len(main_options))
 
@@ -296,16 +298,15 @@ def main():
         elif inp == "Visualize":
             if aggregated:
                 temp_tvec = tvec_a
-                print("You have not aggregated your data. Your data will be sorted by minute (no aggregation)")
             else: 
                 tvec_a, data_a, period = aggregate_measurements(tvec, data, period)
                 temp_tvec = fix_tvec(tvec_a)
-            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             set_display(visualize_string, prefix, suffix, windows)
-            visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
+            visualize_input, suffix = checkIfValidNumber(input(), 0, len(visualize_options))
             if visualize_input == back_val: break
             if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
-            else: plot_statistics(temp_tvec, data_a, time=period)
+            else: plot_statistics(temp_tvec, data_a, zone="All", time=period)
         
         elif inp == "Quit":
             return
