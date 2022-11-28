@@ -101,26 +101,32 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     for dim in np.shape(data): 
         size *= dim
 
+    if time == "minute":
+        alpha = 0.4
+    else: 
+        alpha = 1
+
     labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
-    colors = ["r", "g", "b", "y"]
+    colors = ["tab:red", "tab:green", "tab:blue", "tab:orange"]
     width = 0.2
     if title == "all zones":
         for i in range(4):
             if size < 25:
                 plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
             else:
-                plt.plot(tvec, data[:,i], label=labels[i], color=colors[i])
+                plt.plot(tvec, data[:,i], label=labels[i], color=colors[i], alpha=alpha)
     else: 
         if size < 25:
             plt.bar(tvec, data)
         else:
-            plt.plot(tvec, data, label=f"Zone {zone}", color="r")
+            plt.plot(tvec, data, label=f"Zone {zone}", color="r",alpha=alpha)
 
     plt.title(f"Consumption for {title} per {time}s")
     plt.xlabel(f"Time ({time}s)")
     plt.ylabel("Energy (Wh)")
     plt.tight_layout()
-    plt.xticks(tvec)
+    if time != "minute":
+        plt.xticks(tvec)
     if size >= 25:
         plt.grid()
     plt.legend()
@@ -137,7 +143,7 @@ def fix_tvec(tvec):
         hour = 24*day + hour
         minute = 60*hour + minute
         new_tvec.append(minute)
-    return new_tvec
+    return np.array(new_tvec)
 
 
 def set_display(display_str, prefix, suffix, windows, back=True):
@@ -291,19 +297,27 @@ def main():
 
                 print("9. Back\n", suffix)
                 val, suffix = checkIfValidNumber(input(), 1, 0)
-                if val == back_val:
+
+                if inp == back_val:
                     break
+                elif inp is None:
+                    continue
 
         
         elif inp == "Visualize":
             if aggregated:
                 temp_tvec = tvec_a
             else: 
-                tvec_a, data_a, period = aggregate_measurements(tvec, data, period)
-                temp_tvec = fix_tvec(tvec_a)
+                temp_tvec, data_a, period = aggregate_measurements(tvec, data, period)
             prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             set_display(visualize_string, prefix, suffix, windows)
             visualize_input, suffix = checkIfValidNumber(input(), 0, len(visualize_options))
+
+            if inp == back_val:
+                    break
+            elif inp is None:
+                continue
+
             if visualize_input == back_val: break
             if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
             else: plot_statistics(temp_tvec, data_a, zone="All", time=period)
