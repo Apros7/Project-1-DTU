@@ -298,7 +298,8 @@ def main():
                 temp_tvec = tvec_a
                 print("You have not aggregated your data. Your data will be sorted by minute (no aggregation)")
             else: 
-                temp_tvec = fix_tvec(tvec)
+                tvec_a, data_a, period = aggregate_measurements(tvec, data, period)
+                temp_tvec = fix_tvec(tvec_a)
             prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             set_display(visualize_string, prefix, suffix, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
