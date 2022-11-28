@@ -181,7 +181,7 @@ def main2():
     data = None
     back_val = 9
 
-    windows_string = input("Type anything and press enter if you are on a mac, else just press enter please :-)")
+    windows_string = input("Type anything and press enter if you are on a mac, else just press enter please :-)\n")
     if windows_string == "":
         windows = True
     else:
@@ -215,7 +215,7 @@ def main2():
             aggregated = True
             pass
         elif inp == "display statistics":
-            print("Here is your statistic displayed in a table")
+            print("Here is your statistic displayed in a table:")
             print_statistics(tvec, data)
         elif inp == "visualize":
             if aggregated:
