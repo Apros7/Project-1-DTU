@@ -41,7 +41,7 @@ def aggregate_measurements(tvec, data, period):
         col = 3
     if period == "minute":
         return tvec, data, period
-
+    
     nums = np.unique(tvec[:,col])
     data_a = np.array([])
     tvec_a = np.array([])
@@ -275,6 +275,8 @@ def main():
                 out = aggregate_dir[inp]
 
                 tvec_a, data_a, period = aggregate_measurements(tvec, data, out)
+                aggregated = True
+
 
         elif inp == "Display Statistics":
             if windows:
@@ -292,6 +294,7 @@ def main():
         elif inp == "Visualize":
             if aggregated:
                 temp_tvec = tvec_a
+                print("You have not aggregated your data. Your data will be sorted by minute (no aggregation)")
             else: 
                 temp_tvec = fix_tvec(tvec)
             prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
