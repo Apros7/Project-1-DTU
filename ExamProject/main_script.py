@@ -2,6 +2,8 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 
+# import platform
+# platform.system
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -166,8 +168,17 @@ def checkIfValidNumber(value, lowerBound, upperBound):
 
 numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
 
-main_options = ["load data", "aggregate data", "display statistics", "visualize", "quit"]
+main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
 main_string = numerated_str(main_options)
+
+aggregate_options = [
+    "Consumption per minute (no aggregation)",
+    "Consumption per hour"
+    "Consumption per day"
+    "Consumption per month"
+    "Hour-of-day consumption (hourly average)"
+]
+aggregate_string = numerated_str(aggregate_options)
 
 visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
 visualize_string = numerated_str(visualize_options)
@@ -175,17 +186,21 @@ visualize_string = numerated_str(visualize_options)
 dir_options = os.listdir(os.path.dirname(__file__))
 dir_string = numerated_str(dir_options)
 
+fmode_options = ["forward fill", "backward fill", "drop"]
+fmode_string = numerated_str(fmode_options)
 
-def main2():
+
+def main():
     tvec = None
     data = None
     back_val = 9
+    prefix = ""
+    suffix = ""
 
-    windows_string = input("Type anything and press enter if you are on a mac, else just press enter please :-)\n")
-    if windows_string == "":
-        windows = True
-    else:
-        windows = False
+    print("Type anything and press enter if you are on a mac, else just press enter please :-)")
+    windows_string = input()
+    if windows_string == "": windows = True
+    else: windows = False
 
     while True:
 
@@ -195,42 +210,63 @@ def main2():
         set_display(main_string, intro_message, windows)
         inp = checkIfValidNumber(input(),0,len(main_options))
         inp = main_options[inp]
-        if inp == "load data":
+        
+        if inp == "Load Data":
             while True:
-                inp = int(input())
+                set_display(dir_string, prefix, windows)
+
+                inp = checkIfValidNumber(input(), 0, len(dir_options))
                 if inp == back_val:
                     break
-                inp = main_options[inp]
+                inp = dir_options[inp]
 
-                new_tvec, new_data = load_measurements
+                set_display(fmode_string, prefix, windows)
+                while True:
+                    break
+
+                new_tvec, new_data = load_measurements(inp, )
                 if new_data is None:
-                    set_display()
+                    set_display(aggregate_string, prefix, windows)
                     continue
                 else:
                     tvec, data = new_tvec, new_data
                     break
         
-        elif inp == "aggregate data":
-            # tvec_a, data_a, period must be defined here
-            aggregated = True
-            pass
-        elif inp == "display statistics":
-            print("Here is your statistic displayed in a table:")
+        elif inp == "Aggregate Data":
+            while True:
+                set_display(aggregate_string, prefix, windows)
+
+                inp = checkIfValidNumber(input(), 0, len(aggregate_options))
+                if inp == back_val:
+                    break
+                inp = aggregate_options[inp]
+
+                tvec_a, data_a = aggregate_measurements(tvec, data)
+
+        elif inp == "Display Statistics":
+            print("Here is your statistic displayed in a table")
             print_statistics(tvec, data)
-        elif inp == "visualize":
+            while True:
+                print("9. Back")
+                if input() == back_val:
+                    break
+
+        
+        elif inp == "Visualize":
             if aggregated:
                 temp_tvec = tvec_a
             else: 
                 temp_tvec = fix_tvec(tvec)
-            visualize_intro = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, visualize_intro, windows)
+            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+            set_display(visualize_string, prefix, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
             if visualize_input == back_val: break
             if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
             else: plot_statistics(temp_tvec, data_a, time=period)
-        elif inp == "quit":
+        
+        elif inp == "Quit":
             return
 
 
 if __name__ == "__main__":
-    main2()
+    main()
