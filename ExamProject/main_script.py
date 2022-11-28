@@ -39,7 +39,9 @@ def aggregate_measurements(tvec, data, period):
         col = 1
     if period == "hour of the day":
         col = 3
-    
+    if period == "minute":
+        return tvec, data, period
+
     nums = np.unique(tvec[:,col])
     data_a = np.array([])
     tvec_a = np.array([])
@@ -183,7 +185,7 @@ aggregate_options = [
     "Consumption per month"
     "Hour-of-day consumption (hourly average)"
 ]
-aggregate_dir = ["none", "hour", "day", "month", "hour of the day"]
+aggregate_dir = ["minute", "hour", "day", "month", "hour of the day"]
 aggregate_string = numerated_str(aggregate_options)
 
 visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
