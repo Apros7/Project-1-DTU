@@ -153,11 +153,16 @@ err_badstat = "Error: Invalid statistic, try another."
 err_nofile = "Error: File not found, try another filename"
 err_badfile = "Error: Invalid file, try another file" 
 
+back_val = 9
+
 # This function is introduced to simplify the code related to our command-line interface.
 def checkIfValidNumber(value, lowerBound, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
     except: print(err_notint); return None
+
+    if intValue == back_val:
+        return back_val
 
     # If the input isn't between lower and upper bound, print error and return none.
     if not (lowerBound <= intValue and intValue <= upperBound and intValue != 9):
@@ -205,7 +210,6 @@ period_string = numerated_str(period_options)
 def main():
     tvec = None
     data = None
-    back_val = 9
     prefix = ""
     suffix = ""
 
@@ -239,6 +243,8 @@ def main():
                     fmode_inp = checkIfValidNumber(input(), 0, len(fmode_options))
                     if fmode_inp == back_val:
                         break
+                    if fmode_inp is None:
+                        continue
                     fmode = fmode_dir[fmode_inp]
                     if fmode_inp is not None:
                         break
