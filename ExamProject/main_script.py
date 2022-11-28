@@ -101,20 +101,25 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     for dim in np.shape(data): 
         size *= dim
 
+    if time == "minute":
+        alpha = 0.4
+    else: 
+        alpha = 1
+
     labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
-    colors = ["r", "g", "b", "y"]
+    colors = ["tab:red", "tab:green", "tab:blue", "tab:orange"]
     width = 0.2
     if title == "all zones":
         for i in range(4):
             if size < 25:
                 plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
             else:
-                plt.plot(tvec, data[:,i], label=labels[i], color=colors[i])
+                plt.plot(tvec, data[:,i], label=labels[i], color=colors[i], alpha=alpha)
     else: 
         if size < 25:
             plt.bar(tvec, data)
         else:
-            plt.plot(tvec, data, label=f"Zone {zone}", color="r")
+            plt.plot(tvec, data, label=f"Zone {zone}", color="r",alpha=alpha)
 
     plt.title(f"Consumption for {title} per {time}s")
     plt.xlabel(f"Time ({time}s)")
