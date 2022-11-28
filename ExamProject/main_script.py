@@ -1,9 +1,8 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import platform
 
-# import platform
-# platform.system
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +24,7 @@ def load_measurements(filename, fmode=None):
     for x, y in np.argwhere(data == -1):
         data[x][y] = data[x + num][y]
 
+    # Assuming the data is already sorted:
     tvec = data[:,:6]
     data = data[:,6:]
     return tvec, data
@@ -40,7 +40,17 @@ def aggregate_measurements(tvec, data, period):
     if period == "hour of the day":
         col = 3
     if period == "minute":
-        return fix_tvec(tvec), data, period
+        start_tvec = tvec[0,:]
+        new_tvec = np.array([])
+        for row in tvec:
+            year, month, day, hour, minute, _ = row-start_tvec
+            month = 12*year + month
+            day = 31*month + day
+            hour = 24*day + hour
+            minute = 60*hour + minute
+            new_tvec = np.append(new_tvec, minute)
+
+        return new_tvec, data, period
     
     nums = np.unique(tvec[:,col])
     data_a = np.array([])
@@ -133,19 +143,6 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     plt.show()
 
 
-def fix_tvec(tvec):
-    start_tvec = tvec[0,:]
-    new_tvec = []
-    for row in tvec:
-        year, month, day, hour, minute, _= row-start_tvec
-        month = 12*year + month
-        day = 31*month + day
-        hour = 24*day + hour
-        minute = 60*hour + minute
-        new_tvec.append(minute)
-    return np.array(new_tvec)
-
-
 def set_display(display_str, prefix, suffix, windows, back=True):
     if windows:
         os.system('cls')
@@ -217,10 +214,10 @@ def main():
     period = "minute"
     aggregated = False
 
-    print("Type anything and press enter if you are on a mac, else just press enter please :-)")
-    windows_string = input()
-    if windows_string == "": windows = True
-    else: windows = False
+    if platform.system() == "Windows":
+        windows = True
+    else:
+        windows = False
 
     while True:
 
