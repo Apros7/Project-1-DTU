@@ -165,12 +165,12 @@ def checkIfValidNumber(value, lowerBound, upperBound):
     except: return None, err_notint
 
     if intValue == back_val:
-        return back_val, None
+        return back_val, ""
 
     # If the input isn't between lower and upper bound, print error and return none.
     if not (lowerBound <= intValue and intValue <= upperBound and intValue != 9):
         return None, err_badrange
-    return intValue, None
+    return intValue, ""
 
 
 numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
@@ -180,9 +180,9 @@ main_string = numerated_str(main_options)
 
 aggregate_options = [
     "Consumption per minute (no aggregation)",
-    "Consumption per hour"
-    "Consumption per day"
-    "Consumption per month"
+    "Consumption per hour",
+    "Consumption per day",
+    "Consumption per month",
     "Hour-of-day consumption (hourly average)"
 ]
 aggregate_dir = ["minute", "hour", "day", "month", "hour of the day"]
@@ -276,18 +276,20 @@ def main():
 
                 tvec_a, data_a, period = aggregate_measurements(tvec, data, out)
                 aggregated = True
-
+                break
 
         elif inp == "Display Statistics":
-            if windows:
-                os.system("cls")
-            else:
-                os.system("clear")
-            print("Here is your statistic displayed in a table")
-            print_statistics(tvec, data)
             while True:
-                print("9. Back")
-                if input() == back_val:
+                if windows:
+                    os.system("cls")
+                else:
+                    os.system("clear")
+                print("Here is your statistic displayed in a table")
+                print_statistics(tvec, data)
+
+                print("9. Back\n", suffix)
+                val, suffix = checkIfValidNumber(input(), 1, 0)
+                if val == back_val:
                     break
 
         
