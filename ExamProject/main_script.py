@@ -99,7 +99,6 @@ def print_statistics(_, data):
     print(splitline)
 
 
-# Tvec skal kun indeholde relevante tidsdata
 def plot_statistics(tvec, data, zone="All", time="minute"):
     title = "all zones"
     if zone != "All":
@@ -143,45 +142,40 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     plt.show()
 
 
-def set_display(display_str, prefix, suffix, windows, back=True):
-    if windows:
-        os.system('cls')
-    else: 
-        os.system("clear")
+def clear():  # Clears all text from the console:
+    if platform.system() == "Windows": os.system('cls')
+    else: os.system("clear")
+
+
+numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
+def set_display(display_list, prefix, suffix, back=True):
+    clear()
     print(prefix,"\n")
-    print(display_str)
+    print(numerated_str(display_list))
     print("9. Back\n") if back else None
     print(suffix)
 
 
-err_nodata = "Error: This action can not be done before data is loaded."
 err_notint = "Error: Invalid input, try with an integer."
-err_badrange = "Error: Number not in range, try another number"
-err_badstat = "Error: Invalid statistic, try another."
-err_nofile = "Error: File not found, try another filename"
+err_badrange = "Error: Number is not among the options, try another number"
 err_badfile = "Error: Invalid file, try another file" 
-
 back_val = 9
 
-# This function is introduced to simplify the code related to our command-line interface.
-def checkIfValidNumber(value, lowerBound, upperBound):
-    # If the input can't be converted to an int, print error and return none.
-    try: intValue = int(value)
-    except: return None, err_notint
-
-    if intValue == back_val:
-        return back_val, ""
-
-    # If the input isn't between lower and upper bound, print error and return none.
-    if not (lowerBound <= intValue and intValue <= upperBound and intValue != 9):
+# Helper function, Check if input string is in range
+# returns the number if valid and an error message otherwise:
+def is_valid_num(num:str, num_range:list):
+    # Check if the input number is an integer value.
+    try: num = int(num)
+    except:
+        return None, err_notint
+    # Check if the input number is in range
+    if (num == back_val) or (num in num_range):
+        return num, ""
+    else:
         return None, err_badrange
-    return intValue, ""
 
-
-numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
 
 main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
-main_string = numerated_str(main_options)
 
 aggregate_options = [
     "Consumption per minute (no aggregation)",
@@ -191,39 +185,31 @@ aggregate_options = [
     "Hour-of-day consumption (hourly average)"
 ]
 aggregate_dir = ["minute", "hour", "day", "month", "hour of the day"]
-aggregate_string = numerated_str(aggregate_options)
 
 visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
-visualize_string = numerated_str(visualize_options)
 
 dir_options = os.listdir(os.path.dirname(__file__))
-dir_string = numerated_str(dir_options)
 
 fmode_options = [
     "Fill forward (replace corrupt measurement with latest valid measurement)",
     "Fill backward (replace corrupt measurement with next valid measurement)",
     "Delete corrupt measurements"]
 fmode_dir = ["forward fill", "backward fill", "drop"]
-fmode_string = numerated_str(fmode_options)
+
 
 def main():
     tvec = None
     data = None
-    prefix = """Hello world! This is our program for Analysis of Household Electricity Consumption.
-    Press the number corresponding to the action you want to take:"""
+    prefix = (
+        "Hello world! This is our program for Analysis of Household Electricity Consumption."
+        "Press the number corresponding to the action you want to take:")
     suffix = ""
     period = "minute"
     aggregated = False
 
-    if platform.system() == "Windows":
-        windows = True
-    else:
-        windows = False
-
     while True:
-        # correct input
-        set_display(main_string, prefix, suffix, windows, back=False)
-        inp, suffix = checkIfValidNumber(input(),0,len(main_options))
+        set_display(main_string, prefix, suffix, back=False)
+        inp, suffix = is_valid_num(input(), range(len(main_options)))
 
         if inp == back_val:
             break
@@ -234,9 +220,9 @@ def main():
         
         if inp == "Load Data":
             while True:
-                set_display(dir_string, prefix, suffix, windows)
+                set_display(dir_string, prefix, suffix)
 
-                inp, suffix = checkIfValidNumber(input(), 0, len(dir_options))
+                inp, suffix = is_valid_num(input(), range(len(dir_options)))
                 if inp == back_val:
                     break
                 if inp is None:
@@ -250,8 +236,8 @@ def main():
 
                 while True: #fmode loop
                     suffix = ""
-                    set_display(fmode_string, prefix, suffix, windows)
-                    fmode_inp, suffix = checkIfValidNumber(input(), 0, len(fmode_options))
+                    set_display(fmode_string, prefix, suffix)
+                    fmode_inp, suffix = is_valid_num(input(), range(len(fmode_options)))
                     if fmode_inp == back_val:
                         break
                     if fmode_inp is None:
@@ -261,7 +247,7 @@ def main():
 
                 new_tvec, new_data = load_measurements(out, fmode)
                 if new_data is None:
-                    set_display(aggregate_string, prefix, suffix, windows)
+                    set_display(aggregate_string, prefix, suffix)
                     continue
                 else:
                     tvec, data = new_tvec, new_data
@@ -269,9 +255,9 @@ def main():
         
         elif inp == "Aggregate Data":
             while True:
-                set_display(aggregate_string, prefix, suffix, windows)
+                set_display(aggregate_string, prefix, suffix)
 
-                inp, suffix = checkIfValidNumber(input(), 0, len(aggregate_options))
+                inp, suffix = is_valid_num(input(), range(len(aggregate_options)))
                 if inp == back_val:
                     break
                 elif inp is None:
@@ -284,15 +270,13 @@ def main():
 
         elif inp == "Display Statistics":
             while True:
-                if windows:
-                    os.system("cls")
-                else:
-                    os.system("clear")
+                clear()
                 print("Here is your statistic displayed in a table")
                 print_statistics(tvec, data)
+                print("9. Back")
+                print(suffix)
 
-                print("9. Back\n", suffix)
-                val, suffix = checkIfValidNumber(input(), 1, 0)
+                val, suffix = is_valid_num(input(), range(0))
 
                 if inp == back_val:
                     break
@@ -307,7 +291,7 @@ def main():
                 temp_tvec, data_a, period = aggregate_measurements(tvec, data, period)
             prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             set_display(visualize_string, prefix, suffix, windows)
-            visualize_input, suffix = checkIfValidNumber(input(), 0, len(visualize_options))
+            visualize_input, suffix = is_valid_num(input(), 0, len(visualize_options))
 
             if inp == back_val:
                     break
