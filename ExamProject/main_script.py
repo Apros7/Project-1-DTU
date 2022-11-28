@@ -136,7 +136,7 @@ def fix_tvec(tvec):
         new_tvec.append(minute)
 
 
-def set_display(display_str, prefix, windows, back=True):
+def set_display(display_str, prefix, suffix, windows, back=True):
     if windows:
         os.system('cls')
     else: 
@@ -144,6 +144,7 @@ def set_display(display_str, prefix, windows, back=True):
     print(prefix,"\n")
     print(display_str)
     print("9. Back\n") if back else None
+    print(suffix)
 
 
 err_nodata = "Error: This action can not be done before data is loaded."
@@ -182,6 +183,7 @@ aggregate_options = [
     "Consumption per month"
     "Hour-of-day consumption (hourly average)"
 ]
+aggregate_dir = ["none", "hour", "day", "month", "hour of the day"]
 aggregate_string = numerated_str(aggregate_options)
 
 visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
@@ -196,16 +198,6 @@ fmode_options = [
     "Delete corrupt measurements"]
 fmode_dir = ["forward fill", "backward fill", "drop"]
 fmode_string = numerated_str(fmode_options)
-
-period_options = [
-    "Consumption per minute (no aggregation)",
-    "Consumption per hour",
-    "Consumption per day",
-    "Consumption per month",
-    "Hour-of-day consumption (hourly average)"]
-period_dir = ["none", "hour", "day", "month", "hour of the day"]
-period_string = numerated_str(period_options)
-
 
 def main():
     tvec = None
@@ -223,43 +215,46 @@ def main():
         # correct input
         intro_message = "hej"
         aggregated = False
-        set_display(main_string, intro_message, windows)
-        inp = checkIfValidNumber(input(),0,len(main_options))
+        set_display(main_string, intro_message, suffix, windows)
+        inp, suffix = checkIfValidNumber(input(),0,len(main_options))
 
         if inp == back_val:
             break
-        if fmode_inp is None:
+        if inp is None:
             continue
 
         inp = main_options[inp]
         
         if inp == "Load Data":
             while True:
-                set_display(dir_string, prefix, windows)
+                set_display(dir_string, prefix, suffix, windows)
 
-                inp = checkIfValidNumber(input(), 0, len(dir_options))
+                inp, suffix = checkIfValidNumber(input(), 0, len(dir_options))
                 if inp == back_val:
                     break
                 if inp is None:
                     continue
-                inp = dir_options[inp]
+                out = dir_options[inp]
 
-                while True:
-                    set_display(fmode_string, prefix, windows)
-                    fmode_inp = checkIfValidNumber(input(), 0, len(fmode_options))
+                try: load_measurements(out)
+                except:
+                    suffix = err_badfile
+                    continue
+
+                while True: #fmode loop
+                    suffix = ""
+                    set_display(fmode_string, prefix, suffix, windows)
+                    fmode_inp, suffix = checkIfValidNumber(input(), 0, len(fmode_options))
                     if fmode_inp == back_val:
                         break
                     if fmode_inp is None:
                         continue
                     fmode = fmode_dir[fmode_inp]
-                    if fmode_inp is not None:
-                        break
+                    break
 
-                set_display(dir_string, prefix, windows)
-
-                new_tvec, new_data = load_measurements(inp, )
+                new_tvec, new_data = load_measurements(out, fmode)
                 if new_data is None:
-                    set_display(aggregate_string, prefix, windows)
+                    set_display(aggregate_string, prefix, suffix, windows)
                     continue
                 else:
                     tvec, data = new_tvec, new_data
@@ -267,16 +262,22 @@ def main():
         
         elif inp == "Aggregate Data":
             while True:
-                set_display(aggregate_string, prefix, windows)
+                set_display(aggregate_string, prefix, suffix, windows)
 
-                inp = checkIfValidNumber(input(), 0, len(aggregate_options))
+                inp, suffix = checkIfValidNumber(input(), 0, len(aggregate_options))
                 if inp == back_val:
                     break
-                inp = aggregate_options[inp]
+                elif inp is None:
+                    continue
+                inp = aggregate_dir[inp]
 
                 tvec_a, data_a = aggregate_measurements(tvec, data)
 
         elif inp == "Display Statistics":
+            if windows:
+                os.system("cls")
+            else:
+                os.system("clear")
             print("Here is your statistic displayed in a table")
             print_statistics(tvec, data)
             while True:
@@ -291,7 +292,7 @@ def main():
             else: 
                 temp_tvec = fix_tvec(tvec)
             prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, prefix, windows)
+            set_display(visualize_string, prefix, suffix, windows)
             visualize_input = checkIfValidNumber(input(), 0, len(visualize_options))
             if visualize_input == back_val: break
             if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
