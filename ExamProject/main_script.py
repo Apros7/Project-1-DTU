@@ -159,15 +159,15 @@ back_val = 9
 def checkIfValidNumber(value, lowerBound, upperBound):
     # If the input can't be converted to an int, print error and return none.
     try: intValue = int(value)
-    except: print(err_notint); return None
+    except: return None, err_notint
 
     if intValue == back_val:
-        return back_val
+        return back_val, None
 
     # If the input isn't between lower and upper bound, print error and return none.
     if not (lowerBound <= intValue and intValue <= upperBound and intValue != 9):
-        print(err_badrange); return None
-    return intValue
+        return None, err_badrange
+    return intValue, None
 
 
 numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
@@ -225,6 +225,12 @@ def main():
         aggregated = False
         set_display(main_string, intro_message, windows)
         inp = checkIfValidNumber(input(),0,len(main_options))
+
+        if inp == back_val:
+            break
+        if fmode_inp is None:
+            continue
+
         inp = main_options[inp]
         
         if inp == "Load Data":
