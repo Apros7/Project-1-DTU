@@ -1,9 +1,8 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+import platform
 
-# import platform
-# platform.system
 
 def load_measurements(filename, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +24,7 @@ def load_measurements(filename, fmode=None):
     for x, y in np.argwhere(data == -1):
         data[x][y] = data[x + num][y]
 
+    # Assuming the data is already sorted:
     tvec = data[:,:6]
     data = data[:,6:]
     return tvec, data
@@ -40,7 +40,17 @@ def aggregate_measurements(tvec, data, period):
     if period == "hour of the day":
         col = 3
     if period == "minute":
-        return fix_tvec(tvec), data, period
+        start_tvec = tvec[0,:]
+        new_tvec = np.array([])
+        for row in tvec:
+            year, month, day, hour, minute, _ = row-start_tvec
+            month = 12*year + month
+            day = 31*month + day
+            hour = 24*day + hour
+            minute = 60*hour + minute
+            new_tvec = np.append(new_tvec, minute)
+
+        return new_tvec, data, period
     
     nums = np.unique(tvec[:,col])
     data_a = np.array([])
@@ -56,6 +66,7 @@ def aggregate_measurements(tvec, data, period):
 
 def print_statistics(_, data):
     statistics = []
+    # We append the statistics for every zone
     for i in range(4):
         current_row = data[:,i]
         zone = i+1
@@ -67,6 +78,7 @@ def print_statistics(_, data):
             np.quantile(current_row, 0.75),
             np.max(current_row)
         ])
+    # And then for all data
     statistics.append([
         "All",
         np.min(data),
@@ -82,6 +94,7 @@ def print_statistics(_, data):
     for header in headers:
         print(f"{header:<10}", end="")
     print("\n" + splitline)
+    # We now print the statistic
     for x in range(5):
         for statistic in statistics[x]:
             print(f"{statistic:<10}", end="")
@@ -92,6 +105,7 @@ def print_statistics(_, data):
 # Tvec skal kun indeholde relevante tidsdata
 def plot_statistics(tvec, data, zone="All", time="minute"):
     title = "all zones"
+    # We choose the appropriate data
     if zone != "All":
         data = data[:, zone-1]
         title = f"zone {zone}"
@@ -101,6 +115,7 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     for dim in np.shape(data): 
         size *= dim
 
+    # We make the plot a bit transparent if we plot by minutes
     if time == "minute":
         alpha = 0.4
     else: 
@@ -110,40 +125,32 @@ def plot_statistics(tvec, data, zone="All", time="minute"):
     colors = ["tab:red", "tab:green", "tab:blue", "tab:orange"]
     width = 0.2
     if title == "all zones":
+        # We loop over each zone
         for i in range(4):
             if size < 25:
                 plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
             else:
                 plt.plot(tvec, data[:,i], label=labels[i], color=colors[i], alpha=alpha)
+    # or just plot the zone we want to look at
     else: 
         if size < 25:
             plt.bar(tvec, data)
         else:
             plt.plot(tvec, data, label=f"Zone {zone}", color="r",alpha=alpha)
 
+    # we make the layout
     plt.title(f"Consumption for {title} per {time}s")
     plt.xlabel(f"Time ({time}s)")
     plt.ylabel("Energy (Wh)")
     plt.tight_layout()
     if time != "minute":
+        # we do not include xticks if we look at minutes
+        # as there would be way to many x labels on the plot
         plt.xticks(tvec)
     if size >= 25:
         plt.grid()
     plt.legend()
     plt.show()
-
-
-def fix_tvec(tvec):
-    start_tvec = tvec[0,:]
-    new_tvec = []
-    for row in tvec:
-        year, month, day, hour, minute, _= row-start_tvec
-        month = 12*year + month
-        day = 31*month + day
-        hour = 24*day + hour
-        minute = 60*hour + minute
-        new_tvec.append(minute)
-    return np.array(new_tvec)
 
 
 def set_display(display_str, prefix, suffix, windows, back=True):
@@ -212,21 +219,20 @@ fmode_string = numerated_str(fmode_options)
 def main():
     tvec = None
     data = None
-    prefix = ""
+    prefix = """Hello world! This is our program for Analysis of Household Electricity Consumption.
+    Press the number corresponding to the action you want to take:"""
     suffix = ""
     period = "minute"
     aggregated = False
 
-    print("Type anything and press enter if you are on a mac, else just press enter please :-)")
-    windows_string = input()
-    if windows_string == "": windows = True
-    else: windows = False
+    if platform.system() == "Windows":
+        windows = True
+    else:
+        windows = False
 
     while True:
-
         # correct input
-        intro_message = "hej"
-        set_display(main_string, intro_message, suffix, windows)
+        set_display(main_string, prefix, suffix, windows, back=False)
         inp, suffix = checkIfValidNumber(input(),0,len(main_options))
 
         if inp == back_val:
