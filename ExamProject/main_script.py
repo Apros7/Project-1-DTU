@@ -210,7 +210,7 @@ def main():
     tvec = None
     data = None
     prefix = (
-        "Hello world! This is our program for Analysis of Household Electricity Consumption."
+        "Hello world! This is our program for Analysis of Household Electricity Consumption.\n"
         "Press the number corresponding to the action you want to take:")
     suffix = ""
     period = "minute"
@@ -219,7 +219,6 @@ def main():
     while True:
         set_display(main_options, prefix, suffix, back=False)
         inp, suffix = is_valid_num(input(), range(len(main_options)))
-
         if inp == back_val:
             break
         if inp is None:
@@ -273,7 +272,7 @@ def main():
                     continue
                 out = aggregate_dir[inp]
 
-                tvec_a, data_a, period = aggregate_measurements(tvec, data, out)
+                tvec_a, data_a = aggregate_measurements(tvec, data, out)
                 aggregated = True
                 break
 
@@ -285,7 +284,7 @@ def main():
                 print("9. Back")
                 print(suffix)
 
-                val, suffix = is_valid_num(input(), range(0))
+                inp, suffix = is_valid_num(input(), range(0))
 
                 if inp == back_val:
                     break
@@ -297,19 +296,17 @@ def main():
             if aggregated:
                 temp_tvec = tvec_a
             else: 
-                temp_tvec, data_a, period = aggregate_measurements(tvec, data, period)
+                temp_tvec, data_a = aggregate_measurements(tvec, data, period)
             prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             set_display(visualize_options, prefix, suffix)
-            visualize_input, suffix = is_valid_num(input(), 0, len(visualize_options))
+            visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
 
-            if inp == back_val:
-                    break
-            elif inp is None:
+            if (visualize_input == back_val) or (visualize_input is None):
                 continue
-
-            if visualize_input == back_val: break
-            if visualize_input != 0: plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
-            else: plot_statistics(temp_tvec, data_a, zone="All", time=period)
+            elif visualize_input > 0:
+                plot_statistics(temp_tvec, data_a, zone=visualize_input, time=period)
+            else:
+                plot_statistics(temp_tvec, data_a, zone="All", time=period)
         
         elif inp == "Quit":
             return
