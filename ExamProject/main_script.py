@@ -217,7 +217,7 @@ def main():
     aggregated = False
 
     while True:
-        set_display(main_string, prefix, suffix, back=False)
+        set_display(main_options, prefix, suffix, back=False)
         inp, suffix = is_valid_num(input(), range(len(main_options)))
 
         if inp == back_val:
@@ -229,7 +229,7 @@ def main():
         
         if inp == "Load Data":
             while True:
-                set_display(dir_string, prefix, suffix)
+                set_display(dir_options, prefix, suffix)
 
                 inp, suffix = is_valid_num(input(), range(len(dir_options)))
                 if inp == back_val:
@@ -245,7 +245,7 @@ def main():
 
                 while True: #fmode loop
                     suffix = ""
-                    set_display(fmode_string, prefix, suffix)
+                    set_display(fmode_options, prefix, suffix)
                     fmode_inp, suffix = is_valid_num(input(), range(len(fmode_options)))
                     if fmode_inp == back_val:
                         break
@@ -256,7 +256,7 @@ def main():
 
                 new_tvec, new_data = load_measurements(out, fmode)
                 if new_data is None:
-                    set_display(aggregate_string, prefix, suffix)
+                    set_display(aggregate_options, prefix, suffix)
                     continue
                 else:
                     tvec, data = new_tvec, new_data
@@ -264,7 +264,7 @@ def main():
         
         elif inp == "Aggregate Data":
             while True:
-                set_display(aggregate_string, prefix, suffix)
+                set_display(aggregate_options, prefix, suffix)
 
                 inp, suffix = is_valid_num(input(), range(len(aggregate_options)))
                 if inp == back_val:
@@ -299,7 +299,7 @@ def main():
             else: 
                 temp_tvec, data_a, period = aggregate_measurements(tvec, data, period)
             prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
-            set_display(visualize_string, prefix, suffix, windows)
+            set_display(visualize_options, prefix, suffix)
             visualize_input, suffix = is_valid_num(input(), 0, len(visualize_options))
 
             if inp == back_val:
