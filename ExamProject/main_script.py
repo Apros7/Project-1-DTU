@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import platform
 
 
-def load_measurements(filename, fmode=None):
+def load_measurements(filename: str, fmode=None):
     abspath = os.path.dirname(os.path.abspath(__file__))
     path = abspath + "/" + filename
 
@@ -30,38 +30,37 @@ def load_measurements(filename, fmode=None):
     return tvec, data
 
 
-def aggregate_measurements(tvec, data, period):
-    if period == "hour":
-        col = 3
-    if period == "day":
-        col = 2
-    if period == "month":
-        col = 1
-    if period == "hour of the day":
-        col = 3
+def aggregate_measurements(tvec: np.ndarray, data: np.ndarray, period="minute"):
     if period == "minute":
-        start_tvec = tvec[0,:]
-        new_tvec = np.array([])
-        for row in tvec:
-            year, month, day, hour, minute, _ = row-start_tvec
-            month = 12*year + month
-            day = 31*month + day
-            hour = 24*day + hour
-            minute = 60*hour + minute
-            new_tvec = np.append(new_tvec, minute)
+        # This conversion works assuming the data is sorted 
+        init_val = tvec[0,:]
+        relative_tvec = tvec - init_val
+        # Converts the columns of relative_tvec to minutes and adds them:
+        time_to_min_const = np.array([525948.766, 43829.0639, 1440, 60, 1, 1])
+        min_tvec = np.sum(relative_tvec * time_to_min_const, axis=1, dtype=int)
+        return min_tvec, data
 
-        return new_tvec, data, period
-    
-    nums = np.unique(tvec[:,col])
-    data_a = np.array([])
-    tvec_a = np.array([])
-    for n in nums:
-        tvec_a = np.append(tvec_a, n)
+    elif period == "hour of the day":  #AKA: hotd
+        tvec_a = np.arange(24)
+        hotd_data = []
+        for hour in tvec_a:
+            # Mask that only accepts elements that correspond to the currently iterated hour.
+            mask = tvec[:,3] == hour
+            is_not_empty = data[mask].size > 0
+            # Takes mean of data only if list isn't empty to avoid RuntimeWarning.
+            if is_not_empty: hotd_data.append(np.mean(data[mask], axis=0))
+            else: hotd_data.append(np.zeros(4))
+        return tvec_a, np.asarray(hotd_data)
 
-        mask = tvec[:,col] == n
-        data_a = np.append(data_a, np.sum(data[mask], axis=0))
-    data_a = np.reshape(data_a, (-1,4))
-    return tvec_a, data_a, period
+    elif period == "hour": col = 3
+    elif period == "day": col = 2
+    elif period == "month": col = 1
+
+    # Collects all the unique elements from the relevant time column.
+    tvec_a = np.unique(tvec[:,col])
+    # Does basically the same as hotd but takes sum instead of average.
+    data_a = np.array([np.sum(data[tvec[:,col] == n], axis=0) for n in tvec_a])
+    return tvec_a, data_a
 
 
 def print_statistics(_, data):
