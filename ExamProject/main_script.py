@@ -231,6 +231,7 @@ def main():
     aggregated = False
 
     while True:
+        prefix = "Press the number corresponding to the action you want to take:"
         # We display the options and take the appropriate action
         set_display(main_options, prefix, suffix, back=False)
         inp, suffix = is_valid_num(input(), range(len(main_options)))
@@ -316,12 +317,12 @@ def main():
                 temp_tvec = tvec_a
             else: 
                 temp_tvec, data_a = aggregate_measurements(tvec, data, period)
-                prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\n" + prefix
+                prefix = "You have not aggregated your data yet. Your data will be sorted by minute (no aggregation)\n" + prefix
             
             # We get the zone the user wants to plot
             set_display(visualize_options, prefix, suffix)
             visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
-
+            print("To continue, please close the matplotlib window")
             if (visualize_input == back_val) or (visualize_input is None):
                 continue
             elif visualize_input > 0:
