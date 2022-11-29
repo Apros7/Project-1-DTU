@@ -32,7 +32,6 @@ def load_measurements(filename: str, fmode=None):
 
 def aggregate_measurements(tvec: np.ndarray, data: np.ndarray, period="minute"):
     if period == "minute":
-        # This conversion works assuming the data is sorted 
         init_val = tvec[0,:]
         relative_tvec = tvec - init_val
         # Converts the columns of relative_tvec to minutes and adds them:
