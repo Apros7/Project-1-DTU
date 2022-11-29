@@ -63,6 +63,12 @@ def aggregate_measurements(tvec: np.ndarray, data: np.ndarray, period="minute"):
 
 
 def print_statistics(_, data):
+    # Prints statistics from the loaded data
+    # Usage: main function
+    # Input: tvec and data, which is loaded from load_measurements
+    # Return: None
+    # Screen output: Statistic table
+
     statistics = []
     # We append the statistics for every zone
     for i in range(4):
@@ -101,6 +107,13 @@ def print_statistics(_, data):
 
 
 def plot_statistics(tvec, data, zone="All", time="minute"):
+    # Plots statistics from the loaded data
+    # Usage: main function
+    # Input: tvec and data, which is loaded from load_measurements
+    # desired zone, which is string or integer, and the time unit as a string
+    # Return: None
+    # Screen output: Matplotlib program
+
     title = "all zones"
     # We choose the appropriate data
     if zone != "All":
@@ -182,6 +195,7 @@ def is_valid_num(num:str, num_range:list):
     else:
         return None, err_badrange
 
+# Strings used to give the user options in main script 
 
 main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
 
@@ -206,6 +220,7 @@ fmode_dir = ["forward fill", "backward fill", "drop"]
 
 
 def main():
+    # Some variables are initialized to later be used
     tvec = None
     data = None
     prefix = (
@@ -216,6 +231,7 @@ def main():
     aggregated = False
 
     while True:
+        # We display the options and take the appropriate action
         set_display(main_options, prefix, suffix, back=False)
         inp, suffix = is_valid_num(input(), range(len(main_options)))
         if inp == back_val:
@@ -277,6 +293,7 @@ def main():
 
         elif inp == "Display Statistics":
             while True:
+                # We print the statistic
                 clear()
                 print("Here is your statistic displayed in a table")
                 print_statistics(tvec, data)
@@ -284,7 +301,7 @@ def main():
                 print(suffix)
 
                 inp, suffix = is_valid_num(input(), range(0))
-
+                # and return to the main menu if 9 is pressed
                 if inp == back_val:
                     break
                 elif inp is None:
@@ -292,11 +309,16 @@ def main():
 
         
         elif inp == "Visualize":
+            # We need a approapriate tvec to used the plot function. 
+            # We get this tvec from aggregate measurements if the data has yet to be aggregated. There is no aggregation yet
+            prefix = "You have chosen to visualize your electricity consumption.\nPlease choose your next action:"
             if aggregated:
                 temp_tvec = tvec_a
             else: 
                 temp_tvec, data_a = aggregate_measurements(tvec, data, period)
-            prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\nYou have chosen to visualize your electricity consumption.\nPlease choose your next action:"
+                prefix = "You have not aggregated your data. Your data will be sorted by minute (no aggregation)\n" + prefix
+            
+            # We get the zone the user wants to plot
             set_display(visualize_options, prefix, suffix)
             visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
 
