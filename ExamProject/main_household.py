@@ -1,11 +1,30 @@
-import numpy as np
-import os
 import matplotlib.pyplot as plt
+import numpy as np
 import platform
+import os
+
+
+# String arrays for the set_display() function:
+main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
+aggregate_options = [
+    "Consumption per minute (no aggregation)",
+    "Consumption per hour",
+    "Consumption per day",
+    "Consumption per month",
+    "Hour-of-day consumption (hourly average)"
+]
+aggregate_dir = ["minute", "hour", "day", "month", "hour of the day"]
+visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
+dir_options = os.listdir(os.path.dirname(__file__))
+fmode_options = [
+    "Fill forward (replace corrupt measurement with latest valid measurement)",
+    "Fill backward (replace corrupt measurement with next valid measurement)",
+    "Delete corrupt measurements"]
+fmode_dir = ["forward fill", "backward fill", "drop"]
 
 
 # Loads measurements from csv files:
-def load_measurements(filename: str, fmode: str):
+def load_measurements(filename: str, fmode="drop"):
     # Author:   Alexander Wittrup, s224196
     # Usage:    aggregate_measurements(), print_statistics()
     # Input:    filename and fmode (fill mode) strings.
@@ -19,8 +38,8 @@ def load_measurements(filename: str, fmode: str):
 
     # Mask that excludes all rows with corrupt measurements:
     mask_valid_rows = np.all(data != -1, axis=1)
-    pct = np.count_nonzero(~mask_valid_rows) / len(mask_valid_rows)
 
+    pct = np.count_nonzero(~mask_valid_rows) / len(mask_valid_rows)
     err_ffill = (
         "Error: Forward fill cannot be performed since the first row is corrupted,\n"
         f"{pct:.1%} of the data was corrupted and has been removed instead.")
@@ -63,6 +82,7 @@ def load_measurements(filename: str, fmode: str):
                 prefix = success
     # If there is no data 
     if data.size <= 0 : data = np.zeros(10)[None, :]
+
     return data[:,:6], data[:,6:], prefix, suffix
 
 
@@ -73,7 +93,7 @@ def aggregate_measurements(tvec: np.ndarray, data: np.ndarray, period="minute"):
     # Input:    tvec and data (via. load_measurements()).
     # Returns:  tvec_a, data_a, and error message if there is any (suffix).
 
-    if period == "minute":
+    if (period == "minute") or (period not in aggregate_dir):
         init_val = tvec[0,:]
         relative_tvec = tvec - init_val
         # Converts the columns of relative_tvec to minutes and adds them:
@@ -151,80 +171,76 @@ def print_statistics(_, data: np.ndarray):
 
 
 # Plots statistics from the loaded data
-def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone="All", time="minute"):
-    # Author:        Lucas D. Vilsen, s224195
-    # Usage:         main function
-    # Input:         tvec and data (via. load_measurements()),
-    #                desired zone (string or integer), and the time unit as a string
-    # Return:        None
-    # Screen output: Matplotlib plot
+def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minute"):
+    # Author:         Lucas D. Vilsen, s224195
+    # Usage:          main function
+    # Input:          tvec and data (via. load_measurements()),
+    #                 desired zone (string or integer), and the time unit as a string
+    # Return:         None
+    # Screen output:  Matplotlib plot
 
-    title = "all zones"
-    # We choose the appropriate data
-    if zone != "All":
-        data = data[:, zone-1]
+    # We choose the zone appropriate data
+    if zone == 0:
+        title = "all zones"
+    else:
         title = f"zone {zone}"
+        data = data[:, zone-1]
 
-    # Calculate size:
-    size = 1
-    for dim in np.shape(data): 
-        size *= dim
+    # Condtition for bar plot:
+    cond_bar_plot = np.size(data) < 25
 
-    # We make the plot a bit transparent if we plot by minutes
-    if time == "minute":
+    # We make the plot a bit transparent if we plot by minutes etc.
+    if time_unit == "minute":
         alpha = 0.4
-    else: 
+    else:
+        plt.xticks(tvec)
         alpha = 1
+
+    # Makes x-axis more readable:
+    if time_unit in ["hour", "day", "hour of the day"]:
+        plt.xticks(rotation = 45)
 
     labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
     colors = ["tab:red", "tab:green", "tab:blue", "tab:orange"]
-    width = 0.2
-    if title == "all zones":
+    width = 0.15
+
+    # If the values get too high, change unit:
+    if np.max(data) > 50000:
+        data /= 1000
+        unit = "k"
+    else:
+        unit = ""
+
+    if zone == 0:
         # We loop over each zone
         for i in range(4):
-            if size < 25:
-                plt.bar(tvec+width*(i-1.5), data[:,i], width=0.2)
+            if cond_bar_plot:
+                plt.bar(tvec + width*(i-1.5), data[:,i], width=width)
             else:
                 plt.plot(tvec, data[:,i], label=labels[i], color=colors[i], alpha=alpha)
     # or just plot the zone we want to look at
     else: 
-        if size < 25:
+        if cond_bar_plot:
             plt.bar(tvec, data)
         else:
             plt.plot(tvec, data, label=f"Zone {zone}", color="r",alpha=alpha)
 
     # we make the layout
-    plt.title(f"Consumption for {title} per {time}s")
-    plt.xlabel(f"Time ({time}s)")
-    plt.ylabel("Energy (Wh)")
+    plt.title(f"Consumption for {title} per {time_unit}")
+    plt.xlabel(f"Time ({time_unit}s)")
+    plt.ylabel(f"Energy ({unit}Wh)")
     plt.tight_layout()
-    if time != "minute":
-        # we do not include xticks if we look at minutes
-        # as there would be way to many x labels on the plot
-        plt.xticks(tvec)
-    if size >= 25:
-        plt.grid()
-    plt.legend()
+
+    if time_unit == "hour of the day": # Unique case:
+        plt.title(f"Average consumption for {title} per hour")
+        plt.xlabel(f"Time (hours)")
+        plt.ylabel(f"Energy (Wh)")
+
+    if not cond_bar_plot: plt.grid()
+    plt.ticklabel_format(style='plain')
+    plt.legend(labels)
     plt.show()
 
-
-# String arrays for the set_display() function:
-main_options = ["Load Data", "Aggregate Data", "Display Statistics", "Visualize", "Quit"]
-aggregate_options = [
-    "Consumption per minute (no aggregation)",
-    "Consumption per hour",
-    "Consumption per day",
-    "Consumption per month",
-    "Hour-of-day consumption (hourly average)"
-]
-aggregate_dir = ["minute", "hour", "day", "month", "hour of the day"]
-visualize_options = ["All zones", "Zone 1", "Zone 2", "Zone 3", "Zone 4"]
-dir_options = os.listdir(os.path.dirname(__file__))
-fmode_options = [
-    "Fill forward (replace corrupt measurement with latest valid measurement)",
-    "Fill backward (replace corrupt measurement with next valid measurement)",
-    "Delete corrupt measurements"]
-fmode_dir = ["forward fill", "backward fill", "drop"]
 
 # Mini function to numerate and join a list of strings:
 numerated_str = lambda list: "".join(f"{idx}. {item}\n" for idx, item in enumerate(list))
@@ -246,7 +262,7 @@ def set_display(display_list, prefix, suffix, back=True):
     clear_terminal()
     print(prefix,"\n")
     print(numerated_str(display_list))
-    print("9. Back\n") if back else None
+    print("99. Back\n") if back else None
     print(suffix)
 
 
@@ -254,7 +270,7 @@ err_notint = "Error: Invalid input, try with an integer."
 err_badrange = "Error: Number is not among the options, try another number"
 err_badfile = "Error: Invalid file, try another file"
 err_nodata = "Error: No data to perform action on"
-back_val = 9
+back_val = 99
 
 # Helper function, Check if input string is in range
 # returns the number if it's valid and an error message otherwise:
@@ -273,11 +289,12 @@ def is_valid_num(num:str, num_range:list):
         return None, err_badrange
 
 
+# The command-line UI
 def main():
     # Authors:  Alexander Wittrup, s224196
     #           Lucas D. Vilsen, s224195
 
-    # Variable start values:
+    # Variable initial values:
     tvec = None
     data = None
     intro_string = (
@@ -289,17 +306,20 @@ def main():
     display_intro = True
 
     while True:
-        if display_intro:
+        # Display intro message at first:
+        if display_intro or tvec is None:
             prefix = intro_string
             display_intro = False
         else: prefix = ""
+
+        # Display all actions and ask for input:
         set_display(main_options, prefix, suffix, back=False)
 
         inp, suffix = is_valid_num(input(), range(len(main_options)))
-        if inp == back_val:
-            break
-        elif inp is None:
+        if (inp is None) or (inp == back_val):
+            if suffix == "": suffix = err_badrange
             continue
+        # Check if data has been loaded before taking other actions:
         elif (inp in [1,2,3]) and tvec is None:
             suffix = err_nodata
             continue
@@ -308,6 +328,7 @@ def main():
         
         if inp == "Load Data":
             while True:
+                # Display the file options and ask for input:
                 prefix = "Choose your datafile (.csv or .txt):"
                 set_display(dir_options, prefix, suffix)
 
@@ -317,13 +338,17 @@ def main():
                 elif inp is None:
                     continue
                 else:
+                    # Test if file can be loaded, return error if not:
+                    clear_terminal()
+                    print("Loading ...")
                     try: load_measurements(dir_options[inp], "")
                     except:
                         suffix = err_badfile
                         continue
                 
                 back = False
-                while True:  # Get fmode
+                while True: # fmode loop
+                    # Display fmodes and ask for input:
                     prefix = "Choose your desired fill mode:"
                     set_display(fmode_options, prefix, "")
 
@@ -334,15 +359,19 @@ def main():
                     elif fmode_inp is None:
                         continue
                     else:
+                        clear_terminal()
+                        print("Loading ...")
                         tvec, data, prefix, suffix = load_measurements(dir_options[inp], fmode_dir[fmode_inp])
+                        # If new data is loaded, reset aggregated data:
                         tvec_a, data_a = None, None
                         break
-                if back:
+                if back:  # to differentiate back being pressed and the loop finishing
                     continue
                 break
         
         elif inp == "Aggregate Data":
             while True:
+                # Display the options and ask for input:
                 set_display(aggregate_options, prefix, suffix)
 
                 inp, suffix = is_valid_num(input(), range(len(aggregate_options)))
@@ -351,6 +380,7 @@ def main():
                 elif inp is None:
                     continue
                 else:
+                    # Return aggregated data:
                     tvec_a, data_a = aggregate_measurements(tvec, data, aggregate_dir[inp])
                     break
 
@@ -358,9 +388,9 @@ def main():
             while True:
                 # We print the statistic
                 clear_terminal()
-                print("Here is your statistic displayed in a table")
+                print("Your non-aggregated data displayed in a table:")
                 print_statistics(tvec, data)
-                print("9. Back")
+                print("99. Back")
                 print(suffix)
 
                 inp, suffix = is_valid_num(input(), range(0))
@@ -370,38 +400,26 @@ def main():
                 elif inp is None:
                     continue
 
-        
         elif inp == "Visualize":
-            prefix = (
-                "You have chosen to visualize your electricity consumption.\n"
-                "Please choose your next action:")
+            prefix = "To visualize the eletricity consumption choose the zones you want displayed:"
+            set_display(visualize_options, prefix, suffix)
 
-            # If data hasn't been aggregated, 
+            # If data hasn't been aggregated, fix it per default
             if tvec_a is None:
-                prefix = "The data will be sorted consumption per minute (no aggregation)\n" + prefix
                 tvec_a, data_a = aggregate_measurements(tvec, data, "minute")
+                # prefix = "The data will be sorted consumption per minute (no aggregation)\n" + prefix
             
             # We get the zone the user wants to plot
-            set_display(visualize_options, prefix, suffix)
             visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
-            print("To continue, please close the matplotlib window")
+            
+            print("To continue, please close the Matplotlib window")
             if (visualize_input == back_val) or (visualize_input is None):
                 continue
-            elif visualize_input > 0:
-                plot_statistics(tvec_a, data_a, zone=visualize_input, time=period)
-            else:
-                plot_statistics(tvec_a, data_a, zone="All", time=period)
+            plot_statistics(tvec_a, data_a, zone=visualize_input, time_unit=period)
         
         elif inp == "Quit":
             return
 
 
 if __name__ == "__main__":
-    clear_terminal()
-    tvec, data, _, _ = load_measurements("testdata2.csv", "forward fill")
-    print(tvec, data)
-    tvec_a, data_a = aggregate_measurements(tvec, data, "minute")
-    print(tvec_a, data_a)
-    plot_statistics(tvec_a, data_a)
-
-    # main()
+    main()
