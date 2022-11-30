@@ -125,7 +125,7 @@ def aggregate_measurements(tvec: np.ndarray, data: np.ndarray, period="minute"):
 
 
 # Prints statistics from the loaded data
-def print_statistics(_, data: np.ndarray):
+def print_statistics(_, data: np.ndarray) -> None:
     # Author: Lucas D. Vilsen, s224195
     # Usage:  main function
     # Input:  tvec and data, which is loaded from load_measurements
@@ -165,7 +165,11 @@ def print_statistics(_, data: np.ndarray):
     # We now print the statistic
     for x in range(5):
         for statistic in statistics[x]:
-            print(f"{statistic:<10}", end="")
+            stat = statistic
+            # crude method of rounding:
+            if statistic not in [1,2,3,4,"All"]:
+                stat = f"{statistic:.1f}"
+            print(f"{stat:<10}", end="")
         print("\n", end="")
     print(splitline)
 
@@ -197,7 +201,7 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
         alpha = 1
 
     # Makes x-axis more readable:
-    if time_unit in ["hour", "day", "hour of the day"]:
+    if (time_unit in ["hour", "day", "hour of the day"]) and (not cond_bar_plot):
         plt.xticks(rotation = 45)
 
     labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
@@ -347,10 +351,11 @@ def main():
                         continue
                 
                 back = False
+                suffix = ""
                 while True: # fmode loop
                     # Display fmodes and ask for input:
                     prefix = "Choose your desired fill mode:"
-                    set_display(fmode_options, prefix, "")
+                    set_display(fmode_options, prefix, suffix)
 
                     fmode_inp, suffix = is_valid_num(input(), range(len(fmode_options)))
                     if fmode_inp == back_val:
@@ -381,15 +386,23 @@ def main():
                     continue
                 else:
                     # Return aggregated data:
-                    tvec_a, data_a = aggregate_measurements(tvec, data, aggregate_dir[inp])
+                    period = aggregate_dir[inp]
+                    tvec_a, data_a = aggregate_measurements(tvec, data, period)
                     break
 
         elif inp == "Display Statistics":
             while True:
                 # We print the statistic
                 clear_terminal()
-                print("Your non-aggregated data displayed in a table:")
-                print_statistics(tvec, data)
+
+                # Print appropriate title:
+                if period == "hour of the day":
+                    print(f"Average electricity consumption per hour:")
+                else:
+                    print(f"Electricity consumption per {period}:")
+                # Print aggregated data if any:
+                print_statistics(None, data) if tvec_a is None else print_statistics(None, data_a)
+
                 print("99. Back")
                 print(suffix)
 
