@@ -442,7 +442,9 @@ def main():
                 
                 clear_terminal()
                 print("To continue, please close the Matplotlib window")
-                if (visualize_input == back_val) or (visualize_input is None):
+                if visualize_input == back_val:
+                    break
+                elif visualize_input is None:
                     continue
                 plot_statistics(tvec_a, data_a, zone=visualize_input, time_unit=period)
         
