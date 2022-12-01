@@ -197,12 +197,7 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
     if time_unit == "minute":
         alpha = 0.4
     else:
-        plt.xticks(tvec)
         alpha = 1
-
-    # Makes x-axis more readable:
-    if (time_unit in ["hour", "day", "hour of the day"]) and (not cond_bar_plot):
-        plt.xticks(rotation = 45)
 
     labels = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"]
     colors = ["tab:red", "tab:green", "tab:blue", "tab:orange"]
@@ -219,13 +214,15 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
         # We loop over each zone
         for i in range(4):
             if cond_bar_plot:
-                plt.bar(tvec + width*(i-1.5), data[:,i], width=width)
+                new_tvec = np.arange(len(tvec))
+                plt.bar(new_tvec + width*(i-1.5), data[:,i], width=width)
             else:
                 plt.plot(tvec, data[:,i], label=labels[i], color=colors[i], alpha=alpha)
     # or just plot the zone we want to look at
     else: 
         if cond_bar_plot:
-            plt.bar(tvec, data)
+            new_tvec = np.arange(len(tvec))
+            plt.bar(new_tvec, data)
         else:
             plt.plot(tvec, data, label=f"Zone {zone}", color="r",alpha=alpha)
 
@@ -239,8 +236,16 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
         plt.title(f"Average consumption for {title} per hour")
         plt.xlabel(f"Time (hours)")
         plt.ylabel(f"Energy (Wh)")
+    
+    # Makes x-axis more readable:
+    if (time_unit in ["hour", "day", "hour of the day"]) and (not cond_bar_plot):
+        plt.xticks(rotation = 45)
+    
+    if not(time_unit == "minute" and not cond_bar_plot):
+        plt.xticks(tvec)
 
     if not cond_bar_plot:
+
         plt.grid()
         plt.legend(labels)
     plt.ticklabel_format(style='plain')
