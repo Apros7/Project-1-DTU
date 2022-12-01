@@ -243,7 +243,7 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
     
     if cond_bar_plot:
         plt.xticks(range(len(tvec)), [str(int(n)) for n in tvec])
-    elif period != "minute":
+    elif time_unit != "minute":
         plt.xticks(tvec)
 
     if not cond_bar_plot:
@@ -320,6 +320,8 @@ def main():
         if display_intro or tvec is None:
             prefix = intro_string
             display_intro = False
+        else:
+            prefix = "Press the number corresponding to the action you want to take:"
 
         # Display all actions and ask for input:
         set_display(main_options, prefix, suffix, back=False)
@@ -425,23 +427,24 @@ def main():
                     continue
 
         elif inp == "Visualize":
-            prefix = "To visualize the eletricity consumption, choose the zones you want displayed:"
-            set_display(visualize_options, prefix, suffix)
-            prefix = ""
+            while True:
+                prefix = "To visualize the eletricity consumption, choose the zones you want displayed:"
+                set_display(visualize_options, prefix, suffix)
+                prefix = ""
 
-            # If data hasn't been aggregated, fix it per default
-            if tvec_a is None:
-                tvec_a, data_a = aggregate_measurements(tvec, data, "minute")
-                # prefix = "The data will be sorted consumption per minute (no aggregation)\n" + prefix
-            
-            # We get the zone the user wants to plot
-            visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
-            
-            clear_terminal()
-            print("To continue, please close the Matplotlib window")
-            if (visualize_input == back_val) or (visualize_input is None):
-                continue
-            plot_statistics(tvec_a, data_a, zone=visualize_input, time_unit=period)
+                # If data hasn't been aggregated, fix it per default
+                if tvec_a is None:
+                    tvec_a, data_a = aggregate_measurements(tvec, data, "minute")
+                    # prefix = "The data will be sorted consumption per minute (no aggregation)\n" + prefix
+                
+                # We get the zone the user wants to plot
+                visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
+                
+                clear_terminal()
+                print("To continue, please close the Matplotlib window")
+                if (visualize_input == back_val) or (visualize_input is None):
+                    continue
+                plot_statistics(tvec_a, data_a, zone=visualize_input, time_unit=period)
         
         elif inp == "Quit":
             return
