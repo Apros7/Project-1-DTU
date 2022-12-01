@@ -46,7 +46,8 @@ def load_measurements(filename: str, fmode="drop"):
     err_bfill = (
         "Error: Backward fill cannot be performed since the last row is corrupted,\n"
         f"{pct:.1%} of the data was corrupted and has been removed instead.")
-    success = f"Data successfully loaded.\n{pct:.1%} of data was corrupted and has been filled or excluded."
+    success = f"Data successfully loaded."
+    success_corrupt = f"\n{pct:.1%} of data was corrupted and has been filled or excluded."
     prefix = ""
     suffix = ""
 
@@ -62,11 +63,12 @@ def load_measurements(filename: str, fmode="drop"):
             suffix = err_ffill
         else:
             # Forward fills to previous valid measurement:
+            prefix = success
             for x, y in np.argwhere(data == -1):
                 n=1
                 while data[x-n, y] == -1: n+=1
                 data[x, y] = data[x-n, y]
-            prefix = success
+            prefix = success + success_corrupt
 
     elif fmode == "backward fill":
         # Drops corrupt data if the last row is corrupt:
@@ -75,11 +77,12 @@ def load_measurements(filename: str, fmode="drop"):
             suffix = err_bfill
         else:
             # Backward fills to next valid measurement:
+            prefix = success
             for x, y in np.argwhere(data == -1):
                 n=1
                 while data[x+n, y] == -1: n+=1
                 data[x, y] = data[x+n, y]
-                prefix = success
+                prefix = success + success_corrupt
     # If there is no data 
     if data.size <= 0 : data = np.zeros(10)[None, :]
 
@@ -320,8 +323,6 @@ def main():
         if display_intro or tvec is None:
             prefix = intro_string
             display_intro = False
-        else:
-            prefix = "Press the number corresponding to the action you want to take:"
 
         # Display all actions and ask for input:
         set_display(main_options, prefix, suffix, back=False)
