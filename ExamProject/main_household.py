@@ -241,14 +241,14 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
     if (time_unit in ["hour", "day", "hour of the day"]) and (not cond_bar_plot):
         plt.xticks(rotation = 45)
     
-    if not(time_unit == "minute" and not cond_bar_plot):
+    if cond_bar_plot:
+        plt.xticks(range(len(tvec)), [str(int(n)) for n in tvec])
+    elif period != "minute":
         plt.xticks(tvec)
 
     if not cond_bar_plot:
-
         plt.grid()
         plt.legend(labels)
-    plt.ticklabel_format(style='plain')
     plt.show()
 
 
