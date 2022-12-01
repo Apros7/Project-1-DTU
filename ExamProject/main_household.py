@@ -46,7 +46,7 @@ def load_measurements(filename: str, fmode="drop"):
     err_bfill = (
         "Error: Backward fill cannot be performed since the last row is corrupted,\n"
         f"{pct:.1%} of the data was corrupted and has been removed instead.")
-    success = f"Data successfully loaded. {pct:.1%} of data was filled or excluded."
+    success = f"Data successfully loaded.\n{pct:.1%} of data was corrupted and has been filled or excluded."
     prefix = ""
     suffix = ""
 
@@ -66,7 +66,7 @@ def load_measurements(filename: str, fmode="drop"):
                 n=1
                 while data[x-n, y] == -1: n+=1
                 data[x, y] = data[x-n, y]
-                prefix = success
+            prefix = success
 
     elif fmode == "backward fill":
         # Drops corrupt data if the last row is corrupt:
@@ -240,9 +240,10 @@ def plot_statistics(tvec: np.ndarray, data: np.ndarray, zone=0, time_unit="minut
         plt.xlabel(f"Time (hours)")
         plt.ylabel(f"Energy (Wh)")
 
-    if not cond_bar_plot: plt.grid()
+    if not cond_bar_plot:
+        plt.grid()
+        plt.legend(labels)
     plt.ticklabel_format(style='plain')
-    plt.legend(labels)
     plt.show()
 
 
@@ -314,7 +315,6 @@ def main():
         if display_intro or tvec is None:
             prefix = intro_string
             display_intro = False
-        else: prefix = ""
 
         # Display all actions and ask for input:
         set_display(main_options, prefix, suffix, back=False)
@@ -335,6 +335,7 @@ def main():
                 # Display the file options and ask for input:
                 prefix = "Choose your datafile (.csv or .txt):"
                 set_display(dir_options, prefix, suffix)
+                prefix = ""
 
                 inp, suffix = is_valid_num(input(), range(len(dir_options)))
                 if inp == back_val:
@@ -356,6 +357,7 @@ def main():
                     # Display fmodes and ask for input:
                     prefix = "Choose your desired fill mode:"
                     set_display(fmode_options, prefix, suffix)
+                    prefix = ""
 
                     fmode_inp, suffix = is_valid_num(input(), range(len(fmode_options)))
                     if fmode_inp == back_val:
@@ -370,14 +372,16 @@ def main():
                         # If new data is loaded, reset aggregated data:
                         tvec_a, data_a = None, None
                         break
-                if back:  # to differentiate back being pressed and the loop finishing
+                if back:  # to differentiate "back" being pressed and the loop finishing
                     continue
                 break
         
         elif inp == "Aggregate Data":
             while True:
                 # Display the options and ask for input:
+                prefix = "Choose the method of aggregation:"
                 set_display(aggregate_options, prefix, suffix)
+                prefix = ""
 
                 inp, suffix = is_valid_num(input(), range(len(aggregate_options)))
                 if inp == back_val:
@@ -388,6 +392,8 @@ def main():
                     # Return aggregated data:
                     period = aggregate_dir[inp]
                     tvec_a, data_a = aggregate_measurements(tvec, data, period)
+                    # Don't give any message when not aggregating:
+                    if period != "minute": prefix = f"Data successfully aggregated by {period}."
                     break
 
         elif inp == "Display Statistics":
@@ -414,8 +420,9 @@ def main():
                     continue
 
         elif inp == "Visualize":
-            prefix = "To visualize the eletricity consumption choose the zones you want displayed:"
+            prefix = "To visualize the eletricity consumption, choose the zones you want displayed:"
             set_display(visualize_options, prefix, suffix)
+            prefix = ""
 
             # If data hasn't been aggregated, fix it per default
             if tvec_a is None:
@@ -425,6 +432,7 @@ def main():
             # We get the zone the user wants to plot
             visualize_input, suffix = is_valid_num(input(), range(len(visualize_options)))
             
+            clear_terminal()
             print("To continue, please close the Matplotlib window")
             if (visualize_input == back_val) or (visualize_input is None):
                 continue
@@ -435,4 +443,13 @@ def main():
 
 
 if __name__ == "__main__":
+    # fmode = "forward fill"
+    # zone = 0
+    # period = "hour of the day"
+
+    # clear_terminal()
+    # tvec, data, _, _ = load_measurements("testdata1.csv", fmode)
+    # tvec_a, data_a = aggregate_measurements(tvec, data, period)
+
+    # plot_statistics(tvec_a, data_a, zone=zone, time_unit=period)
     main()
